@@ -17,6 +17,14 @@
     "lib": [
       "es2018",
       "dom"
-    ]
+    ],
+    "paths": {
+      "at-form": [
+        "dist/at-form"
+      ],
+      "at-form/*": [
+        "dist/at-form/*"
+      ]
+    }
   }
 }

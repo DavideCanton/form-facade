@@ -10,7 +10,7 @@
       true,
       "check-space"
     ],
-    "curly": true,
+    "curly": false,
     "deprecation": {
       "severity": "warn"
     },
@@ -27,10 +27,7 @@
     ],
     "interface-over-type-literal": true,
     "label-position": true,
-    "max-line-length": [
-      true,
-      140
-    ],
+    "max-line-length": false,
     "member-access": false,
     "member-ordering": [
       true,
@@ -64,7 +61,7 @@
       "ignore-params"
     ],
     "no-misused-new": true,
-    "no-non-null-assertion": true,
+    "no-non-null-assertion": false,
     "no-redundant-jsdoc": true,
     "no-shadowed-variable": true,
     "no-string-literal": false,
@@ -76,13 +73,7 @@
     "no-use-before-declare": true,
     "no-var-keyword": true,
     "object-literal-sort-keys": false,
-    "one-line": [
-      true,
-      "check-open-brace",
-      "check-catch",
-      "check-else",
-      "check-whitespace"
-    ],
+    "one-line": false,
     "prefer-const": true,
     "quotemark": [
       true,
@@ -109,14 +100,7 @@
     ],
     "unified-signatures": true,
     "variable-name": false,
-    "whitespace": [
-      true,
-      "check-branch",
-      "check-decl",
-      "check-operator",
-      "check-separator",
-      "check-type"
-    ],
+    "whitespace": false,
     "no-output-on-prefix": true,
     "use-input-property-decorator": true,
     "use-output-property-decorator": true,
