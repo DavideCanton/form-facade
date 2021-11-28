@@ -4,7 +4,7 @@ import { has, isNull } from 'lodash';
 
 import { FormControlWithWarning } from './form-control-with-warning';
 import { FormGroupFacade } from './form-group-facade';
-import { AtFormValidators, getSafeParentControlValue } from './validators';
+import { FormFacadeValidators } from './validators';
 
 describe('CustomValidators.conditionalValidation', () =>
 {
@@ -19,29 +19,29 @@ describe('CustomValidators.conditionalValidation', () =>
 
   beforeEach(() =>
   {
-    facade = FormGroupFacade.buildFacadeFrom<IForm>({
+    facade = new FormGroupFacade<IForm>({
       min: {
         initialValue: 0,
-        validator: AtFormValidators.conditionalValidation(
+        validator: FormFacadeValidators.conditionalValidation(
           () => validate,
-          AtFormValidators.composeValidators([
+          FormFacadeValidators.composeValidators([
             Validators.required,
-            AtFormValidators.makeDependentValidator<IForm>(
+            FormFacadeValidators.makeDependentValidator<IForm>(
               ['max'],
-              ctrl => getSafeParentControlValue<IForm, 'max'>('max', ctrl)! > ctrl.value ? null : { error: true }
+              ctrl => FormGroupFacade.getFacadeFromChildControl<IForm>(ctrl).getValue('max') > ctrl.value ? null : { error: true }
             ),
           ])
         )
       },
       max: {
         initialValue: 100,
-        validator: AtFormValidators.conditionalValidation(
+        validator: FormFacadeValidators.conditionalValidation(
           () => validate,
-          AtFormValidators.composeValidators([
+          FormFacadeValidators.composeValidators([
             Validators.required,
-            AtFormValidators.makeDependentValidator<IForm>(
+            FormFacadeValidators.makeDependentValidator<IForm>(
               ['min'],
-              ctrl => getSafeParentControlValue<IForm, 'min'>('min', ctrl)! < ctrl.value ? null : { error: true }
+              ctrl => FormGroupFacade.getFacadeFromChildControl<IForm>(ctrl).getValue('min')! < ctrl.value ? null : { error: true }
             )
           ])
         )
@@ -59,15 +59,19 @@ describe('CustomValidators.conditionalValidation', () =>
   it('should validate when validate is true', fakeAsync(() =>
   {
     validate = true;
+
     facade.patchValues({ min: 2, max: 0 });
     tick();
     checkStatus(false);
+
     facade.patchValues({ max: 3 });
     tick();
     checkStatus(true);
+
     facade.patchValues({ min: 4 });
     tick();
     checkStatus(false);
+
     facade.patchValues({ min: null });
     tick();
     checkStatus(false, false, true);
@@ -76,15 +80,19 @@ describe('CustomValidators.conditionalValidation', () =>
   it('should not validate when validate is false', fakeAsync(() =>
   {
     validate = false;
+
     facade.patchValues({ min: 2, max: 0 });
     tick();
     checkStatus(true);
+
     facade.patchValues({ max: 3 });
     tick();
     checkStatus(true);
+
     facade.patchValues({ min: 4 });
     tick();
     checkStatus(true);
+
     facade.patchValues({ min: null });
     tick();
     checkStatus(true);
@@ -93,6 +101,7 @@ describe('CustomValidators.conditionalValidation', () =>
   it('should validate correctly when validate condition changes', fakeAsync(() =>
   {
     validate = true;
+
     facade.patchValues({ min: 2, max: 0 });
     tick();
     checkStatus(false);
@@ -127,14 +136,12 @@ describe('CommonValidatorFunctions.conditionalRequired', () =>
 {
   it('should validate correctly', fakeAsync(() =>
   {
-    const validator = AtFormValidators.conditionalRequired<ITest>({
+    const validator = FormFacadeValidators.conditionalRequired<ITest>({
       propName: 'value',
       value: EnumTest.A
     });
 
-    const formFacade = new FormGroupFacade<ITest>();
-
-    formFacade.buildFrom({
+    const formFacade = new FormGroupFacade<ITest>({
       value: { initialValue: EnumTest.B },
       num: { initialValue: null, validator },
       name: { initialValue: '' }
@@ -157,7 +164,7 @@ describe('CommonValidatorFunctions.conditionalRequired', () =>
   {
     it('should validate correctly', fakeAsync(() =>
     {
-      const validator = AtFormValidators.conditionalRequiredMultiple<ITest>([{
+      const validator = FormFacadeValidators.conditionalRequiredMultiple<ITest>([{
         propName: 'value',
         value: EnumTest.A,
       }, {
@@ -168,13 +175,12 @@ describe('CommonValidatorFunctions.conditionalRequired', () =>
         value: 'name!',
       }]);
 
-      const formFacade = new FormGroupFacade<ITest>();
-
-      formFacade.buildFrom({
+      const formFacade = new FormGroupFacade<ITest>({
         value: { initialValue: EnumTest.B },
         num: { initialValue: null, validator },
         name: { initialValue: '' }
       });
+      tick();
 
       expect(formFacade.valid).toBe(true);
 
@@ -200,7 +206,7 @@ describe('makeValidatorWarning', () =>
 {
   it('should create a warning validator correctly', () =>
   {
-    const warningValidator = AtFormValidators.makeValidatorWarning(Validators.required);
+    const warningValidator = FormFacadeValidators.makeValidatorWarning(Validators.required);
     const formControl = new FormControlWithWarning('', [warningValidator]);
 
     formControl.updateValueAndValidity();
@@ -217,7 +223,7 @@ describe('makeValidatorWarning', () =>
 
   it('should mix correctly validators and warnings', () =>
   {
-    const warningValidator = AtFormValidators.makeValidatorWarning(Validators.pattern(/^A.+/));
+    const warningValidator = FormFacadeValidators.makeValidatorWarning(Validators.pattern(/^A.+/));
     const maxLengthValidator = Validators.minLength(3);
     const formControl = new FormControlWithWarning('aa', [
       warningValidator,

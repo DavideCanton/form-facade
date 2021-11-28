@@ -19,11 +19,11 @@
       "dom"
     ],
     "paths": {
-      "at-form": [
-        "dist/at-form"
+      "@davidecanton/form-facade": [
+        "dist/@davidecanton/form-facade"
       ],
-      "at-form/*": [
-        "dist/at-form/*"
+      "@davidecanton/form-facade/*": [
+        "dist/@davidecanton/form-facade/*"
       ]
     }
   }

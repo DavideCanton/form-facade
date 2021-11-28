@@ -1,0 +1,12 @@
+<form [formGroup]="facade.group">
+  <input type="text"
+         formControlName="name"
+         name="name">
+  <input type="number"
+         formControlName="age"
+         name="age"
+         min="0">
+</form>
+
+<pre>{{ facade.group.value | json }}</pre>
+<pre>{{ facade.errors | json }}</pre>

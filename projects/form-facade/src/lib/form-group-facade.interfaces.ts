@@ -2,7 +2,20 @@ import { AbstractControl, AsyncValidatorFn, ValidationErrors, ValidatorFn } from
 import { Observable, OperatorFunction } from 'rxjs';
 
 import { ISelectModel } from './select-model';
-import { ElementOf } from './type-utils';
+
+type ElementOf<T> = T extends any[] ? T[number] : T;
+
+
+// WARNING: auto mark as dependent not working for group validators
+export const CUSTOM_VALIDATOR_SYMBOL = Symbol('custom_validator');
+
+export type ValueOrFn<T> = T | (() => T);
+
+export interface IConditionalRequiredPropertyInfo<I, K extends keyof I>
+{
+  propName: K;
+  value: ValueOrFn<I[K]>;
+}
 
 export enum ValidationStatus
 {
@@ -45,9 +58,9 @@ export interface IFormDefinition<T, TParent = any>
   disabledWhen?: Observable<boolean> | IDisabledWhenField<TParent> | IDisabledWhenMultipleFields<TParent>;
 }
 
-export interface IFormArrayDefinition<T, TParent = any, TE = ElementOf<T>> extends IFormDefinition<T, TParent>
+export interface IFormArrayDefinition<T, TParent = any> extends IFormDefinition<T, TParent>
 {
-  controlBuilder?: () => IFormGroupDefinition<TE> | AbstractControl;
+  controlBuilder?: () => IFormGroupDefinition<ElementOf<T>> | AbstractControl;
 }
 
 export interface IFormDefinitionExtras

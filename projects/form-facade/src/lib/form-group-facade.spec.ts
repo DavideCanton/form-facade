@@ -2,9 +2,10 @@ import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { every, has } from 'lodash';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
+
 import { FormArrayWithWarning, FormControlWithWarning } from './form-control-with-warning';
 import { FormGroupFacade } from './form-group-facade';
-import { AtFormValidators } from './validators';
+import { FormFacadeValidators } from './validators';
 
 interface IFormModel
 {
@@ -18,8 +19,7 @@ describe('FormGroupFacade', () =>
 {
   it('should associate correctly facade and built FormGroup', () =>
   {
-    const facade = new FormGroupFacade<IFormModel>();
-    facade.buildFrom({
+    const facade = new FormGroupFacade<IFormModel>({
       name: { initialValue: '' },
       surname: { initialValue: '' },
       age: { initialValue: 0 }
@@ -39,13 +39,11 @@ describe('FormGroupFacade', () =>
 
   it('should work with warnings and validators mixed', () =>
   {
-    const facade = new FormGroupFacade<IFormModel>();
-
-    facade.buildFrom({
+    const facade = new FormGroupFacade<IFormModel>({
       name: {
         initialValue: 'aa',
-        validator: AtFormValidators.composeValidators([
-          AtFormValidators.makeValidatorWarning(Validators.pattern(/^A.+/)),
+        validator: FormFacadeValidators.composeValidators([
+          FormFacadeValidators.makeValidatorWarning(Validators.pattern(/^A.+/)),
           Validators.minLength(3)
         ])
       },
@@ -78,14 +76,12 @@ describe('FormGroupFacade', () =>
 
   it('should work with warnings and validators mixed', () =>
   {
-    const facade = new FormGroupFacade<IFormModel>();
-
-    facade.buildFrom({
+    const facade = new FormGroupFacade<IFormModel>({
       name: { initialValue: 'aa', },
       surname: { initialValue: '' },
       age: {
         initialValue: 4,
-        validator: AtFormValidators.makeValidatorWarning(Validators.min(5), (err) => ({ ...err, test: true }))
+        validator: FormFacadeValidators.makeValidatorWarning(Validators.min(5), (err) => ({ ...err, test: true }))
       }
     });
 
@@ -106,7 +102,6 @@ describe('FormGroupFacade', () =>
       cs: { n: string }[];
     }
 
-    const facade = new FormGroupFacade<I>();
 
     const lengthMsg = (n: number) => 'length not > of ' + n;
     const patternObj = (requiredPattern, actualValue) => ({ requiredPattern, actualValue });
@@ -116,15 +111,15 @@ describe('FormGroupFacade', () =>
       return ctrl.value.length > n ? null : { arrayLengthGt: lengthMsg(n) };
     };
 
-    facade.buildFrom({
+    const facade = new FormGroupFacade<I>({
       ns: {
         initialValue: [],
-        controlBuilder: () => new FormControlWithWarning('', AtFormValidators.composeValidators([
-          AtFormValidators.makeValidatorWarning(Validators.pattern(/^A.+/)),
+        controlBuilder: () => new FormControlWithWarning('', FormFacadeValidators.composeValidators([
+          FormFacadeValidators.makeValidatorWarning(Validators.pattern(/^A.+/)),
           Validators.minLength(3)
         ])),
-        validator: AtFormValidators.composeValidators([
-          AtFormValidators.makeValidatorWarning(arrayLengthGt(3)),
+        validator: FormFacadeValidators.composeValidators([
+          FormFacadeValidators.makeValidatorWarning(arrayLengthGt(3)),
           arrayLengthGt(0)
         ])
       },
@@ -133,14 +128,14 @@ describe('FormGroupFacade', () =>
         controlBuilder: () => ({
           n: {
             initialValue: '',
-            validator: AtFormValidators.composeValidators([
-              AtFormValidators.makeValidatorWarning(Validators.pattern(/^A.+/)),
+            validator: FormFacadeValidators.composeValidators([
+              FormFacadeValidators.makeValidatorWarning(Validators.pattern(/^A.+/)),
               Validators.minLength(3)
             ])
           }
         }),
-        validator: AtFormValidators.composeValidators([
-          AtFormValidators.makeValidatorWarning(arrayLengthGt(3)),
+        validator: FormFacadeValidators.composeValidators([
+          FormFacadeValidators.makeValidatorWarning(arrayLengthGt(3)),
           arrayLengthGt(0)
         ])
       }
@@ -246,8 +241,7 @@ describe('FormGroupFacade', () =>
 
   it('should disable fields correctly with name+operator', () =>
   {
-    const facade = new FormGroupFacade<IFormModel>();
-    facade.buildFrom({
+    const facade = new FormGroupFacade<IFormModel>({
       name: {
         initialValue: '',
         disabledWhen: {
@@ -268,8 +262,7 @@ describe('FormGroupFacade', () =>
 
   it('should disable fields correctly from multiple conditions with default joinFn', () =>
   {
-    const facade = new FormGroupFacade<IFormModel>();
-    facade.buildFrom({
+    const facade = new FormGroupFacade<IFormModel>({
       name: {
         initialValue: '',
         disabledWhen: {
@@ -303,8 +296,7 @@ describe('FormGroupFacade', () =>
 
   it('should disable fields correctly from multiple conditions with custom joinFn', () =>
   {
-    const facade = new FormGroupFacade<IFormModel>();
-    facade.buildFrom({
+    const facade = new FormGroupFacade<IFormModel>({
       name: {
         initialValue: '',
         disabledWhen: {
@@ -340,8 +332,7 @@ describe('FormGroupFacade', () =>
 
   it('should reset initial values', () =>
   {
-    const facade = new FormGroupFacade<IFormModel>();
-    facade.buildFrom({
+    const facade = new FormGroupFacade<IFormModel>({
       name: { initialValue: 'Mucca' },
       surname: { initialValue: 'Carolina' },
       age: { initialValue: 10 }
@@ -357,8 +348,7 @@ describe('FormGroupFacade', () =>
 
   it('should init fields correctly disabled with name+operator', () =>
   {
-    const facade = new FormGroupFacade<IFormModel>();
-    facade.buildFrom({
+    const facade = new FormGroupFacade<IFormModel>({
       name: {
         initialValue: '',
         disabledWhen: {
@@ -372,8 +362,7 @@ describe('FormGroupFacade', () =>
 
     expect(facade.getControl('name').disabled).toBe(true);
 
-    const facadeWithDifferentOrder = new FormGroupFacade<IFormModel>();
-    facadeWithDifferentOrder.buildFrom({
+    const facadeWithDifferentOrder = new FormGroupFacade<IFormModel>({
       age: { initialValue: 12 },
       name: {
         initialValue: '',
@@ -391,8 +380,7 @@ describe('FormGroupFacade', () =>
   it('should disable fields correctly with observable', () =>
   {
     const subject = new BehaviorSubject<boolean>(false);
-    const facade = new FormGroupFacade<IFormModel>();
-    facade.buildFrom({
+    const facade = new FormGroupFacade<IFormModel>({
       name: {
         initialValue: '',
         disabledWhen: subject
@@ -414,8 +402,7 @@ describe('FormGroupFacade', () =>
 
   it('should return disabled fields with getValues(true)', () =>
   {
-    const facade = new FormGroupFacade<IFormModel>();
-    facade.buildFrom({
+    const facade = new FormGroupFacade<IFormModel>({
       name: {
         initialValue: 'name',
         disabledWhen: {
@@ -444,8 +431,7 @@ describe('FormGroupFacade', () =>
 
   it('should not return disabled fields with getValues(false)', () =>
   {
-    const facade = new FormGroupFacade<IFormModel>();
-    facade.buildFrom({
+    const facade = new FormGroupFacade<IFormModel>({
       name: {
         initialValue: 'name',
         disabledWhen: {
@@ -489,12 +475,11 @@ describe('FormGroupFacade', () =>
 
     const disable = new BehaviorSubject<boolean>(false);
 
-    const facade = new FormGroupFacade<IEntity>();
     const invalidNumber = 'invalid number';
     const notGreaterThanMsg = (n: number) => 'x not greater than ' + n;
     const missingMsg = (s: string) => 'missing ' + s;
 
-    facade.buildFrom({
+    const facade = new FormGroupFacade<IEntity>({
       n: { initialValue: 0 },
       ns: {
         initialValue: [],
@@ -539,8 +524,8 @@ describe('FormGroupFacade', () =>
       ns2: ['a', 'b', 'c'],
       cs: [{ x: 6 }, { x: 7 }],
       cs2: [{ x: 6 }, { x: 5 }],
-    }, 'First patchValues works');
-    expect(facade.valid).toBe(true, 'Form is valid');
+    });
+    expect(facade.valid).toBe(true);
 
     facade.patchValues({
       n: 1,
@@ -555,8 +540,8 @@ describe('FormGroupFacade', () =>
       ns2: ['b', 'c'],
       cs: [{ x: 3 }, { x: 6 }, { x: 7 }],
       cs2: [{ x: 3 }, { x: 5 }, { x: 7 }],
-    }, 'Second patchValues works');
-    expect(facade.valid).toBe(false, 'Form became invalid');
+    });
+    expect(facade.valid).toBe(false);
     expect(facade.errors).toEqual({
       ns: { a: missingMsg('a') },
       ns2: {
@@ -566,7 +551,7 @@ describe('FormGroupFacade', () =>
       cs2: {
         controlErrors: { x2: notGreaterThanMsg(4) },
       },
-    }, 'Validation errors are correct');
+    });
 
     facade.patchValues({
       n: 1,
@@ -581,8 +566,8 @@ describe('FormGroupFacade', () =>
       ns2: ['b', '10'],
       cs: [{ x: 3 }, { x: 6 }, { x: 7 }],
       cs2: [{ x: 3 }, { x: 5 }, { x: 10 }],
-    }, 'Second patchValues works');
-    expect(facade.valid).toBe(false, 'Form became invalid');
+    });
+    expect(facade.valid).toBe(false);
     expect(facade.errors).toEqual({
       ns: { a: missingMsg('a') },
       ns2: {
@@ -598,7 +583,7 @@ describe('FormGroupFacade', () =>
           2: { x: { x3: invalidNumber } }
         },
       },
-    }, 'Validation errors are correct');
+    });
   });
 
   it('should not propagate markAsDirtyRecursive to children', () =>
@@ -613,9 +598,7 @@ describe('FormGroupFacade', () =>
       cs2: ISubEntity[];
     }
 
-    const facade = new FormGroupFacade<IEntity>();
-
-    facade.buildFrom({
+    const facade = new FormGroupFacade<IEntity>({
       cs2: {
         initialValue: [{ x: 10 }, { x: 20 }],
         controlBuilder: () => ({
@@ -627,17 +610,17 @@ describe('FormGroupFacade', () =>
     });
 
     let control = facade.getControl('cs2') as FormArrayWithWarning;
-    expect(control.dirty).toBeFalse();
-    expect(control.controls[0].dirty).toBeFalse();
-    expect(control.controls[1].dirty).toBeFalse();
+    expect(control.dirty).toBe(false);
+    expect(control.controls[0].dirty).toBe(false);
+    expect(control.controls[1].dirty).toBe(false);
 
     facade.markAsDirtyRecursive(false);
 
     control = facade.getControl('cs2') as FormArrayWithWarning;
-    expect(control.dirty).toBeTrue();
-    expect(control.controls[0].dirty).toBeTrue();
-    expect(control.controls[1].dirty).toBeTrue();
-    expect(control.controls[0].get('x')!.dirty).toBeTrue();
-    expect(control.controls[1].get('x')!.dirty).toBeTrue();
+    expect(control.dirty).toBe(true);
+    expect(control.controls[0].dirty).toBe(true);
+    expect(control.controls[1].dirty).toBe(true);
+    expect(control.controls[0].get('x')!.dirty).toBe(true);
+    expect(control.controls[1].get('x')!.dirty).toBe(true);
   });
 });

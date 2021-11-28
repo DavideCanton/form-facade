@@ -3,33 +3,33 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "at-form": {
-      "root": "projects/at-form",
-      "sourceRoot": "projects/at-form/src",
+    "form-facade": {
+      "root": "projects/form-facade",
+      "sourceRoot": "projects/form-facade/src",
       "projectType": "library",
       "prefix": "lib",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
-            "tsConfig": "projects/at-form/tsconfig.lib.json",
-            "project": "projects/at-form/ng-package.json"
+            "tsConfig": "projects/form-facade/tsconfig.lib.json",
+            "project": "projects/form-facade/ng-package.json"
           }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/at-form/src/test.ts",
-            "tsConfig": "projects/at-form/tsconfig.spec.json",
-            "karmaConfig": "projects/at-form/karma.conf.js"
+            "main": "projects/form-facade/src/test.ts",
+            "tsConfig": "projects/form-facade/tsconfig.spec.json",
+            "karmaConfig": "projects/form-facade/karma.conf.js"
           }
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": [
-              "projects/at-form/tsconfig.lib.json",
-              "projects/at-form/tsconfig.spec.json"
+              "projects/form-facade/tsconfig.lib.json",
+              "projects/form-facade/tsconfig.spec.json"
             ],
             "exclude": [
               "**/node_modules/**"
@@ -38,9 +38,9 @@
         }
       }
     },
-    "at-form-test": {
-      "root": "projects/at-form-test/",
-      "sourceRoot": "projects/at-form-test/src",
+    "form-facade-test": {
+      "root": "projects/form-facade-test/",
+      "sourceRoot": "projects/form-facade-test/src",
       "projectType": "application",
       "prefix": "app",
       "schematics": {},
@@ -48,17 +48,17 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/at-form-test",
-            "index": "projects/at-form-test/src/index.html",
-            "main": "projects/at-form-test/src/main.ts",
-            "polyfills": "projects/at-form-test/src/polyfills.ts",
-            "tsConfig": "projects/at-form-test/tsconfig.app.json",
+            "outputPath": "dist/form-facade-test",
+            "index": "projects/form-facade-test/src/index.html",
+            "main": "projects/form-facade-test/src/main.ts",
+            "polyfills": "projects/form-facade-test/src/polyfills.ts",
+            "tsConfig": "projects/form-facade-test/tsconfig.app.json",
             "assets": [
-              "projects/at-form-test/src/favicon.ico",
-              "projects/at-form-test/src/assets"
+              "projects/form-facade-test/src/favicon.ico",
+              "projects/form-facade-test/src/assets"
             ],
             "styles": [
-              "projects/at-form-test/src/styles.css"
+              "projects/form-facade-test/src/styles.css"
             ],
             "scripts": []
           },
@@ -66,8 +66,8 @@
             "production": {
               "fileReplacements": [
                 {
-                  "replace": "projects/at-form-test/src/environments/environment.ts",
-                  "with": "projects/at-form-test/src/environments/environment.prod.ts"
+                  "replace": "projects/form-facade-test/src/environments/environment.ts",
+                  "with": "projects/form-facade-test/src/environments/environment.prod.ts"
                 }
               ],
               "optimization": true,
@@ -92,34 +92,34 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "at-form-test:build"
+            "browserTarget": "form-facade-test:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "at-form-test:build:production"
+              "browserTarget": "form-facade-test:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "at-form-test:build"
+            "browserTarget": "form-facade-test:build"
           }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/at-form-test/src/test.ts",
-            "polyfills": "projects/at-form-test/src/polyfills.ts",
-            "tsConfig": "projects/at-form-test/tsconfig.spec.json",
-            "karmaConfig": "projects/at-form-test/karma.conf.js",
+            "main": "projects/form-facade-test/src/test.ts",
+            "polyfills": "projects/form-facade-test/src/polyfills.ts",
+            "tsConfig": "projects/form-facade-test/tsconfig.spec.json",
+            "karmaConfig": "projects/form-facade-test/karma.conf.js",
             "styles": [
-              "projects/at-form-test/src/styles.css"
+              "projects/form-facade-test/src/styles.css"
             ],
             "scripts": [],
             "assets": [
-              "projects/at-form-test/src/favicon.ico",
-              "projects/at-form-test/src/assets"
+              "projects/form-facade-test/src/favicon.ico",
+              "projects/form-facade-test/src/assets"
             ]
           }
         },
@@ -127,37 +127,9 @@
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": [
-              "projects/at-form-test/tsconfig.app.json",
-              "projects/at-form-test/tsconfig.spec.json"
+              "projects/form-facade-test/tsconfig.app.json",
+              "projects/form-facade-test/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
-          }
-        }
-      }
-    },
-    "at-form-test-e2e": {
-      "root": "projects/at-form-test-e2e/",
-      "projectType": "application",
-      "prefix": "",
-      "architect": {
-        "e2e": {
-          "builder": "@angular-devkit/build-angular:protractor",
-          "options": {
-            "protractorConfig": "projects/at-form-test-e2e/protractor.conf.js",
-            "devServerTarget": "at-form-test:serve"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "at-form-test:serve:production"
-            }
-          }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": "projects/at-form-test-e2e/tsconfig.e2e.json",
             "exclude": [
               "**/node_modules/**"
             ]
@@ -166,5 +138,5 @@
       }
     }
   },
-  "defaultProject": "at-form-test"
+  "defaultProject": "form-facade-test"
 }

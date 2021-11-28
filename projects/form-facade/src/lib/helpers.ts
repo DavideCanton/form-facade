@@ -1,6 +1,6 @@
 import { isFunction, isNil, keys, reduce } from 'lodash';
 
-export type ValueOrFn<T> = T | (() => T);
+import { ValueOrFn } from './form-group-facade.interfaces';
 
 export function getValue<T>(value: ValueOrFn<T>): T
 {

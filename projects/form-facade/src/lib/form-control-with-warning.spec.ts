@@ -2,7 +2,7 @@ import { FormControl, Validators } from '@angular/forms';
 
 import { FormArrayWithWarning, FormControlWithWarning } from './form-control-with-warning';
 import { ValidationStatus } from './form-group-facade.interfaces';
-import { AtFormValidators } from './validators';
+import { FormFacadeValidators } from './validators';
 
 describe('FormControlWithWarning', () =>
 {
@@ -63,18 +63,18 @@ describe('FormControlWithWarning', () =>
   {
     const c = new FormControlWithWarning(
       'ciao',
-      AtFormValidators.makeValidatorWarning(Validators.required)
+      FormFacadeValidators.makeValidatorWarning(Validators.required)
     );
-    expect(c.hasWarnings).toBeFalse();
+    expect(c.hasWarnings).toBe(false);
     c.setValue('');
-    expect(c.hasWarnings).toBeTrue();
+    expect(c.hasWarnings).toBe(true);
 
     c.disable();
-    expect(c.hasWarnings).toBeFalse();
+    expect(c.hasWarnings).toBe(false);
     expect(c.status).toBe(ValidationStatus.Disabled);
 
     c.enable();
-    expect(c.hasWarnings).toBeTrue();
+    expect(c.hasWarnings).toBe(true);
     expect(c.status).toBe(ValidationStatus.Valid);
   });
 });
@@ -134,24 +134,24 @@ describe('FormArrayWithWarning', () =>
   {
     const c = new FormArrayWithWarning(
       [],
-      AtFormValidators.makeValidatorWarning(control => control.value.length > 0 ? null : { invalid: true })
+      FormFacadeValidators.makeValidatorWarning(control => control.value.length > 0 ? null : { invalid: true })
     );
 
-    expect(c.hasWarnings).toBeTrue();
+    expect(c.hasWarnings).toBe(true);
     c.insert(0, new FormControl());
-    expect(c.hasWarnings).toBeFalse();
+    expect(c.hasWarnings).toBe(false);
     c.removeAt(0);
-    expect(c.hasWarnings).toBeTrue();
+    expect(c.hasWarnings).toBe(true);
 
     c.disable();
-    expect(c.hasWarnings).toBeFalse();
+    expect(c.hasWarnings).toBe(false);
     expect(c.status).toBe(ValidationStatus.Disabled);
 
     c.enable();
-    expect(c.hasWarnings).toBeTrue();
+    expect(c.hasWarnings).toBe(true);
     expect(c.status).toBe(ValidationStatus.Valid);
 
     c.insert(0, new FormControl());
-    expect(c.hasWarnings).toBeFalse();
+    expect(c.hasWarnings).toBe(false);
   });
 });
