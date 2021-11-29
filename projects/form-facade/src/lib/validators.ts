@@ -51,7 +51,9 @@ export class FormFacadeValidators
       {
         return some(propArray, ({ propName, value }) =>
         {
-          const condition = FormGroupFacade.getFacadeFromChildControl(ctrl).getValue(propName);
+          const NO_FACADE = {};
+          const condition = FormGroupFacade.getFacadeFromChildControl(ctrl)?.getValue(propName) ?? NO_FACADE;
+          if(condition === NO_FACADE) return false;
           return FormFacadeValidators.isSameValueRequired(condition, value);
         });
       });

@@ -28,7 +28,7 @@ describe('CustomValidators.conditionalValidation', () =>
             Validators.required,
             FormFacadeValidators.makeDependentValidator<IForm>(
               ['max'],
-              ctrl => FormGroupFacade.getFacadeFromChildControl<IForm>(ctrl).getValue('max') > ctrl.value ? null : { error: true }
+              ctrl => FormGroupFacade.getFacadeFromChildControl<IForm>(ctrl)?.getValue('max') > ctrl.value ? null : { error: true }
             ),
           ])
         )
@@ -41,7 +41,7 @@ describe('CustomValidators.conditionalValidation', () =>
             Validators.required,
             FormFacadeValidators.makeDependentValidator<IForm>(
               ['min'],
-              ctrl => FormGroupFacade.getFacadeFromChildControl<IForm>(ctrl).getValue('min')! < ctrl.value ? null : { error: true }
+              ctrl => FormGroupFacade.getFacadeFromChildControl<IForm>(ctrl)?.getValue('min')! < ctrl.value ? null : { error: true }
             )
           ])
         )
