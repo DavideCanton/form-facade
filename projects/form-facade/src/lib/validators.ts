@@ -118,7 +118,7 @@ export class FormFacadeValidators
     {
       const output = fn(c);
       if(output)
-        c.setWarning(transformFn(output));
+        c.addWarning(transformFn(output));
       return null;
     };
     return FormFacadeValidators.makeDependentValidator(fn[CUSTOM_VALIDATOR_SYMBOL], warningValidatorFn);

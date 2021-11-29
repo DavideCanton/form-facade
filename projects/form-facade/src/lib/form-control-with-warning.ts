@@ -5,45 +5,48 @@ export interface IControlWithWarning
   warnings: any;
   hasWarnings: boolean;
 
-  setWarning(warning: any, replace?: boolean): void;
+  addWarning(warning: any): void;
+  setWarning(warning: any): void;
   clearWarning(): void;
 }
 
 function applyWarningMixin(ctrl: IControlWithWarning & AbstractControl)
 {
-  (ctrl as any)._warnings = {};
+  let __warnings = {};
 
   const oldUpdate = ctrl.updateValueAndValidity;
-  ctrl.updateValueAndValidity = function (...opts: Parameters<AbstractControl['updateValueAndValidity']>)
+  ctrl.updateValueAndValidity = function(...opts: Parameters<AbstractControl['updateValueAndValidity']>)
   {
-    this._warnings = {};
+    __warnings = {};
     oldUpdate.apply(ctrl, opts);
   };
 
   const oldDisable = ctrl.disable;
-  ctrl.disable = function (...opts: Parameters<AbstractControl['disable']>)
+  ctrl.disable = function(...opts: Parameters<AbstractControl['disable']>)
   {
-    this._warnings = {};
+    __warnings = {};
     oldDisable.apply(ctrl, opts);
   };
 
-  ctrl.setWarning = function (warning: any, replace = false)
+  ctrl.addWarning = function(warning: any)
   {
-    if (warning)
+    if(warning)
     {
-      if (replace)
-        this._warnings = warning;
-      else
-        this._warnings = {
-          ...warning,
-          ...this._warnings
-        };
+      this.setWarning({
+        ...warning,
+        ...__warnings
+      });
     }
   };
 
-  ctrl.clearWarning = function ()
+  ctrl.setWarning = function(warning: any)
   {
-    this._warnings = {};
+    __warnings = warning;
+  };
+
+  ctrl.clearWarning = function()
+  {
+    __warnings = {};
   };
 
   Object.defineProperties(
@@ -52,8 +55,8 @@ function applyWarningMixin(ctrl: IControlWithWarning & AbstractControl)
       warnings: {
         get()
         {
-          if (this.hasWarnings)
-            return { ...this._warnings };
+          if(this.hasWarnings)
+            return { ...__warnings };
 
           return null;
         }
@@ -61,7 +64,7 @@ function applyWarningMixin(ctrl: IControlWithWarning & AbstractControl)
       hasWarnings: {
         get()
         {
-          return Object.keys(this._warnings).length > 0;
+          return Object.keys(__warnings).length > 0;
         }
       }
     }
@@ -75,9 +78,9 @@ function initControl(
 )
 {
   applyWarningMixin(control);
-  if (asyncValidator)
+  if(asyncValidator)
     control.setAsyncValidators(asyncValidator);
-  if (validator)
+  if(validator)
     control.setValidators(validator);
   control.updateValueAndValidity();
 }
@@ -86,8 +89,8 @@ export class FormControlWithWarning extends FormControl implements IControlWithW
 {
   warnings: any;
   hasWarnings: boolean;
-  // tslint:disable-next-line:bool-param-default
-  setWarning: (warning: any, replace?: boolean) => void;
+  setWarning: (warning: any) => void;
+  addWarning: (warning: any) => void;
   clearWarning: () => void;
 
   constructor(
@@ -107,8 +110,8 @@ export class FormArrayWithWarning extends FormArray implements IControlWithWarni
 {
   warnings: any;
   hasWarnings: boolean;
-  // tslint:disable-next-line:bool-param-default
-  setWarning: (warning: any, replace?: boolean) => void;
+  setWarning: (warning: any) => void;
+  addWarning: (warning: any) => void;
   clearWarning: () => void;
 
   constructor(

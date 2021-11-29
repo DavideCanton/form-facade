@@ -6,6 +6,17 @@ import { FormFacadeValidators } from './validators';
 
 describe('FormControlWithWarning', () =>
 {
+  it('should add warnings correctly', () =>
+  {
+    const c = new FormControlWithWarning('');
+    expect(c.hasWarnings).toBe(false);
+    expect(c.warnings).toBeNull();
+    c.addWarning({ required: true });
+    c.addWarning({ max: true });
+    expect(c.hasWarnings).toBe(true);
+    expect(c.warnings).toEqual({ required: true, max: true });
+  });
+
   it('should set warnings correctly', () =>
   {
     const c = new FormControlWithWarning('');
@@ -13,17 +24,6 @@ describe('FormControlWithWarning', () =>
     expect(c.warnings).toBeNull();
     c.setWarning({ required: true });
     c.setWarning({ max: true });
-    expect(c.hasWarnings).toBe(true);
-    expect(c.warnings).toEqual({ required: true, max: true });
-  });
-
-  it('should replace warnings correctly', () =>
-  {
-    const c = new FormControlWithWarning('');
-    expect(c.hasWarnings).toBe(false);
-    expect(c.warnings).toBeNull();
-    c.setWarning({ required: true }, true);
-    c.setWarning({ max: true }, true);
     expect(c.hasWarnings).toBe(true);
     expect(c.warnings).toEqual({ max: true });
   });
@@ -33,8 +33,8 @@ describe('FormControlWithWarning', () =>
     const c = new FormControlWithWarning('');
     expect(c.hasWarnings).toBe(false);
     expect(c.warnings).toBeNull();
-    c.setWarning({ required: true });
-    c.setWarning({ max: true });
+    c.addWarning({ required: true });
+    c.addWarning({ max: true });
     expect(c.hasWarnings).toBe(true);
     expect(c.warnings).toEqual({ required: true, max: true });
     c.clearWarning();
@@ -81,13 +81,13 @@ describe('FormControlWithWarning', () =>
 
 describe('FormArrayWithWarning', () =>
 {
-  it('should set warnings correctly', () =>
+  it('should add warnings correctly', () =>
   {
     const c = new FormArrayWithWarning([]);
     expect(c.hasWarnings).toBe(false);
     expect(c.warnings).toBeNull();
-    c.setWarning({ required: true });
-    c.setWarning({ max: true });
+    c.addWarning({ required: true });
+    c.addWarning({ max: true });
     expect(c.hasWarnings).toBe(true);
     expect(c.warnings).toEqual({ required: true, max: true });
   });
@@ -101,8 +101,8 @@ describe('FormArrayWithWarning', () =>
     expect(c.hasWarnings).toBe(false);
     expect(c.warnings).toBeNull();
 
-    ctrl.setWarning({ required: true });
-    ctrl.setWarning({ max: true });
+    ctrl.addWarning({ required: true });
+    ctrl.addWarning({ max: true });
     expect(ctrl.hasWarnings).toBe(true);
     expect(ctrl.warnings).toEqual({ required: true, max: true });
     expect(c.hasWarnings).toBe(false);
