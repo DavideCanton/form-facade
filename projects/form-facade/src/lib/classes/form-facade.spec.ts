@@ -4,8 +4,8 @@ import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { FormArrayWithWarning, FormControlWithWarning } from './form-control-with-warning';
-import { FormGroupFacade } from './form-group-facade';
-import { FormFacadeValidators } from './validators';
+import { FormFacade } from './form-facade';
+import { FormFacadeValidators } from './validators/validators';
 
 interface IFormModel
 {
@@ -15,11 +15,11 @@ interface IFormModel
 }
 
 // tslint:disable-next-line: no-big-function
-describe('FormGroupFacade', () =>
+describe('FormFacade', () =>
 {
   it('should associate correctly facade and built FormGroup', () =>
   {
-    const facade = new FormGroupFacade<IFormModel>({
+    const facade = new FormFacade<IFormModel>({
       name: { initialValue: '' },
       surname: { initialValue: '' },
       age: { initialValue: 0 }
@@ -27,19 +27,19 @@ describe('FormGroupFacade', () =>
 
     const group = facade.group;
 
-    expect(FormGroupFacade.getFormGroupFacade<IFormModel>(group)).toBe(facade);
+    expect(FormFacade.getFormGroupFacade<IFormModel>(group)).toBe(facade);
   });
 
   it('should return null if group is not build from a facade', () =>
   {
     const group = new FormGroup({});
 
-    expect(FormGroupFacade.getFormGroupFacade<IFormModel>(group)).toBeNull();
+    expect(FormFacade.getFormGroupFacade<IFormModel>(group)).toBeNull();
   });
 
   it('should work with warnings and validators mixed', () =>
   {
-    const facade = new FormGroupFacade<IFormModel>({
+    const facade = new FormFacade<IFormModel>({
       name: {
         initialValue: 'aa',
         validator: FormFacadeValidators.composeValidators([
@@ -76,7 +76,7 @@ describe('FormGroupFacade', () =>
 
   it('should work with warnings and validators mixed', () =>
   {
-    const facade = new FormGroupFacade<IFormModel>({
+    const facade = new FormFacade<IFormModel>({
       name: { initialValue: 'aa', },
       surname: { initialValue: '' },
       age: {
@@ -111,7 +111,7 @@ describe('FormGroupFacade', () =>
       return ctrl.value.length > n ? null : { arrayLengthGt: lengthMsg(n) };
     };
 
-    const facade = new FormGroupFacade<I>({
+    const facade = new FormFacade<I>({
       ns: {
         initialValue: [],
         controlBuilder: () => new FormControlWithWarning('', FormFacadeValidators.composeValidators([
@@ -241,7 +241,7 @@ describe('FormGroupFacade', () =>
 
   it('should disable fields correctly with name+operator', () =>
   {
-    const facade = new FormGroupFacade<IFormModel>({
+    const facade = new FormFacade<IFormModel>({
       name: {
         initialValue: '',
         disabledWhen: {
@@ -262,7 +262,7 @@ describe('FormGroupFacade', () =>
 
   it('should disable fields correctly from multiple conditions with default joinFn', () =>
   {
-    const facade = new FormGroupFacade<IFormModel>({
+    const facade = new FormFacade<IFormModel>({
       name: {
         initialValue: '',
         disabledWhen: {
@@ -296,7 +296,7 @@ describe('FormGroupFacade', () =>
 
   it('should disable fields correctly from multiple conditions with custom joinFn', () =>
   {
-    const facade = new FormGroupFacade<IFormModel>({
+    const facade = new FormFacade<IFormModel>({
       name: {
         initialValue: '',
         disabledWhen: {
@@ -332,7 +332,7 @@ describe('FormGroupFacade', () =>
 
   it('should reset initial values', () =>
   {
-    const facade = new FormGroupFacade<IFormModel>({
+    const facade = new FormFacade<IFormModel>({
       name: { initialValue: 'Mucca' },
       surname: { initialValue: 'Carolina' },
       age: { initialValue: 10 }
@@ -348,7 +348,7 @@ describe('FormGroupFacade', () =>
 
   it('should init fields correctly disabled with name+operator', () =>
   {
-    const facade = new FormGroupFacade<IFormModel>({
+    const facade = new FormFacade<IFormModel>({
       name: {
         initialValue: '',
         disabledWhen: {
@@ -362,7 +362,7 @@ describe('FormGroupFacade', () =>
 
     expect(facade.getControl('name').disabled).toBe(true);
 
-    const facadeWithDifferentOrder = new FormGroupFacade<IFormModel>({
+    const facadeWithDifferentOrder = new FormFacade<IFormModel>({
       age: { initialValue: 12 },
       name: {
         initialValue: '',
@@ -380,7 +380,7 @@ describe('FormGroupFacade', () =>
   it('should disable fields correctly with observable', () =>
   {
     const subject = new BehaviorSubject<boolean>(false);
-    const facade = new FormGroupFacade<IFormModel>({
+    const facade = new FormFacade<IFormModel>({
       name: {
         initialValue: '',
         disabledWhen: subject
@@ -402,7 +402,7 @@ describe('FormGroupFacade', () =>
 
   it('should return disabled fields with getValues(true)', () =>
   {
-    const facade = new FormGroupFacade<IFormModel>({
+    const facade = new FormFacade<IFormModel>({
       name: {
         initialValue: 'name',
         disabledWhen: {
@@ -431,7 +431,7 @@ describe('FormGroupFacade', () =>
 
   it('should not return disabled fields with getValues(false)', () =>
   {
-    const facade = new FormGroupFacade<IFormModel>({
+    const facade = new FormFacade<IFormModel>({
       name: {
         initialValue: 'name',
         disabledWhen: {
@@ -479,7 +479,7 @@ describe('FormGroupFacade', () =>
     const notGreaterThanMsg = (n: number) => 'x not greater than ' + n;
     const missingMsg = (s: string) => 'missing ' + s;
 
-    const facade = new FormGroupFacade<IEntity>({
+    const facade = new FormFacade<IEntity>({
       n: { initialValue: 0 },
       ns: {
         initialValue: [],
@@ -598,7 +598,7 @@ describe('FormGroupFacade', () =>
       cs2: ISubEntity[];
     }
 
-    const facade = new FormGroupFacade<IEntity>({
+    const facade = new FormFacade<IEntity>({
       cs2: {
         initialValue: [{ x: 10 }, { x: 20 }],
         controlBuilder: () => ({

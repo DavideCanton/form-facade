@@ -1,6 +1,25 @@
-import { isFunction, isNil, keys, reduce } from 'lodash';
+import { has, isFunction, isNil, keys, reduce } from 'lodash';
 
-import { ValueOrFn } from './form-group-facade.interfaces';
+import { IDisabledWhenField, IDisabledWhenMultipleFields, IFormArrayDefinition, IFormDefinition, ValueOrFn } from '../definitions/form-group-facade.interfaces';
+import { FormFacade } from '../form-facade';
+
+export interface IOuterFormPropName<T, K extends keyof T>
+{
+  facade: FormFacade<T>;
+  propName: K;
+}
+
+export function isFormDefinitionArrayWithControlBuilder(v: IFormDefinition<any>): v is Required<IFormArrayDefinition<any>>
+{
+  return !!(v as any).controlBuilder;
+}
+
+export function isDisabledWhenMultipleFields<T>(v: IDisabledWhenMultipleFields<T> | IDisabledWhenField<T>): v is IDisabledWhenMultipleFields<T>
+{
+  return has(v, 'conditions');
+}
+
+export const FORM_GROUP_FACADE_SYMBOL = Symbol('form-group-facade-ref');
 
 export function getValue<T>(value: ValueOrFn<T>): T
 {

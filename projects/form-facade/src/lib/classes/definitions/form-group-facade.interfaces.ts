@@ -19,10 +19,10 @@ export interface IConditionalRequiredPropertyInfo<I, K extends keyof I>
 
 export enum ValidationStatus
 {
-  Valid = 'VALID',
-  Invalid = 'INVALID',
-  Pending = 'PENDING',
-  Disabled = 'DISABLED'
+  VALID = 'VALID',
+  INVALID = 'INVALID',
+  PENDING = 'PENDING',
+  DISABLED = 'DISABLED'
 }
 
 export type IFormGroupDefinition<T> = {

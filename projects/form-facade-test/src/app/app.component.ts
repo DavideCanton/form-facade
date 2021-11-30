@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { FormFacadeValidators, FormGroupFacade } from '@davidecanton/form-facade';
+import { FormControl } from '@angular/forms';
+import { FormFacadeValidators, FormFacade } from '@davidecanton/form-facade';
 
 interface I
 {
@@ -13,11 +14,11 @@ interface I
 })
 export class AppComponent implements OnInit
 {
-  facade: FormGroupFacade<I>;
+  facade: FormFacade<I>;
 
   ngOnInit()
   {
-    this.facade = new FormGroupFacade<I>({
+    this.facade = new FormFacade<I>({
       name: {
         initialValue: ''
       },
@@ -25,7 +26,7 @@ export class AppComponent implements OnInit
         initialValue: 0,
         validator: FormFacadeValidators.makeDependentValidator<I>(
           ['name'],
-          ctrl => FormGroupFacade.getFacadeFromChildControl<I>(ctrl)?.getValue('name')?.endsWith('a') ?
+          (ctrl: FormControl) => FormFacade.getFacadeFromChildControl<I>(ctrl)?.getValue('name')?.endsWith('a') ?
             (ctrl?.value > 18 ? null : { error: 'age must be greater than 18 for ending with a' }) :
             (ctrl?.value > 21 ? null : { error: 'age must be greater than 21 for others' })
         )

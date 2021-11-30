@@ -1,10 +1,11 @@
 import { AbstractControl, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { assign, compact, every, flatten, groupBy, identity, isNil, isNull, isString, map, some, uniq } from 'lodash';
 
-import { FormControlWithWarning } from './form-control-with-warning';
-import { FormGroupFacade, IOuterFormPropName } from './form-group-facade';
-import { CUSTOM_VALIDATOR_SYMBOL, IConditionalRequiredPropertyInfo, ValueOrFn } from './form-group-facade.interfaces';
-import { getValue, isNullUndefinedEmpty } from './helpers';
+import { CUSTOM_VALIDATOR_SYMBOL, IConditionalRequiredPropertyInfo, ValueOrFn } from '../definitions/form-group-facade.interfaces';
+import { FormControlWithWarning } from '../form-control-with-warning';
+import { FormFacade } from '../form-facade';
+import { getValue, IOuterFormPropName, isNullUndefinedEmpty } from '../utils/helpers';
+
 
 type Dependents<I> = keyof I | symbol | IOuterFormPropName<any, any>;
 
@@ -29,7 +30,7 @@ export class FormFacadeValidators
     return FormFacadeValidators.conditionalRequiredMultiple([prop], customMessage);
   }
 
-  static conditionalRequiredFromGroup<I>(formFacade: FormGroupFacade<I>, prop: IConditionalRequiredPropertyInfo<I, keyof I>, customMessage = ''): ValidatorFn
+  static conditionalRequiredFromGroup<I>(formFacade: FormFacade<I>, prop: IConditionalRequiredPropertyInfo<I, keyof I>, customMessage = ''): ValidatorFn
   {
     const fn = (ctrl: AbstractControl) =>
     {
@@ -52,7 +53,7 @@ export class FormFacadeValidators
         return some(propArray, ({ propName, value }) =>
         {
           const NO_FACADE = {};
-          const condition = FormGroupFacade.getFacadeFromChildControl(ctrl)?.getValue(propName) ?? NO_FACADE;
+          const condition = FormFacade.getFacadeFromChildControl(ctrl)?.getValue(propName) ?? NO_FACADE;
           if(condition === NO_FACADE) return false;
           return FormFacadeValidators.isSameValueRequired(condition, value);
         });

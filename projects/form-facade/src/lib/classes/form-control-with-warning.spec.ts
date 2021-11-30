@@ -1,8 +1,8 @@
 import { FormControl, Validators } from '@angular/forms';
 
+import { ValidationStatus } from './definitions/form-group-facade.interfaces';
 import { FormArrayWithWarning, FormControlWithWarning } from './form-control-with-warning';
-import { ValidationStatus } from './form-group-facade.interfaces';
-import { FormFacadeValidators } from './validators';
+import { FormFacadeValidators } from './validators/validators';
 
 describe('FormControlWithWarning', () =>
 {
@@ -71,11 +71,11 @@ describe('FormControlWithWarning', () =>
 
     c.disable();
     expect(c.hasWarnings).toBe(false);
-    expect(c.status).toBe(ValidationStatus.Disabled);
+    expect(c.status).toBe(ValidationStatus.DISABLED);
 
     c.enable();
     expect(c.hasWarnings).toBe(true);
-    expect(c.status).toBe(ValidationStatus.Valid);
+    expect(c.status).toBe(ValidationStatus.VALID);
   });
 });
 
@@ -145,11 +145,11 @@ describe('FormArrayWithWarning', () =>
 
     c.disable();
     expect(c.hasWarnings).toBe(false);
-    expect(c.status).toBe(ValidationStatus.Disabled);
+    expect(c.status).toBe(ValidationStatus.DISABLED);
 
     c.enable();
     expect(c.hasWarnings).toBe(true);
-    expect(c.status).toBe(ValidationStatus.Valid);
+    expect(c.status).toBe(ValidationStatus.VALID);
 
     c.insert(0, new FormControl());
     expect(c.hasWarnings).toBe(false);

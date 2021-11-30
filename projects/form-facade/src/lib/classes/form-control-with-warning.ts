@@ -1,4 +1,4 @@
-import { AbstractControl, AbstractControlOptions, AsyncValidatorFn, FormArray, FormControl, ValidatorFn } from '@angular/forms';
+import { AbstractControl, AbstractControlOptions, AsyncValidatorFn, FormArray, FormControl, FormGroup, ValidatorFn } from '@angular/forms';
 
 export interface IControlWithWarning
 {
@@ -116,6 +116,26 @@ export class FormArrayWithWarning extends FormArray implements IControlWithWarni
 
   constructor(
     formState: AbstractControl[],
+    validator?: ValidatorFn | ValidatorFn[] | null,
+    asyncValidator?: AsyncValidatorFn | AsyncValidatorFn[] | null,
+    opts?: AbstractControlOptions
+  )
+  {
+    super(formState, opts);
+    initControl(this, asyncValidator, validator);
+  }
+}
+
+export class FormGroupWithWarning extends FormGroup implements IControlWithWarning
+{
+  warnings: any;
+  hasWarnings: boolean;
+  setWarning: (warning: any) => void;
+  addWarning: (warning: any) => void;
+  clearWarning: () => void;
+
+  constructor(
+    formState: Record<string, AbstractControl>,
     validator?: ValidatorFn | ValidatorFn[] | null,
     asyncValidator?: AsyncValidatorFn | AsyncValidatorFn[] | null,
     opts?: AbstractControlOptions
