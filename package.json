@@ -10,7 +10,6 @@
     "test-ci:lib": "npm run test:lib -- --no-watch --browsers=ChromeHeadlessCI",
     "build:lib": "ng build form-facade"
   },
-  "private": true,
   "dependencies": {
     "@angular/animations": "~13.0.0",
     "@angular/common": "~13.0.0",
