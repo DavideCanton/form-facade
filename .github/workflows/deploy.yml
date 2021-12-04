@@ -27,6 +27,7 @@ jobs:
         name: Install dependencies
 
       - run: npm publish --access public --verbose
+        working-directory: ./dist/@mdcc/form-facade
         name: Deploy
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
