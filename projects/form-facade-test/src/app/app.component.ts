@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { FormFacadeValidators, FormFacade } from '@davidecanton/form-facade';
+import { FormFacadeValidators, FormFacade } from '@mdcc/form-facade';
 
 interface I
 {

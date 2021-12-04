@@ -21,11 +21,11 @@
       "dom"
     ],
     "paths": {
-      "@davidecanton/form-facade": [
-        "dist/@davidecanton/form-facade"
+      "@mdcc/form-facade": [
+        "dist/@mdcc/form-facade"
       ],
-      "@davidecanton/form-facade/*": [
-        "dist/@davidecanton/form-facade/*"
+      "@mdcc/form-facade/*": [
+        "dist/@mdcc/form-facade/*"
       ]
     }
   },
