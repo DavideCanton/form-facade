@@ -1,0 +1,1 @@
+export * from './select-model-manager.directive';
