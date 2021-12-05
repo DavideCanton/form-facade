@@ -1,11 +1,32 @@
 <form [formGroup]="facade.group">
-  <input type="text"
-         formControlName="name"
-         name="name">
-  <input type="number"
-         formControlName="age"
-         name="age"
-         min="0">
+  <div class="wrapper">
+    <div>Name:</div>
+    <input type="text"
+           formControlName="name"
+           name="name">
+
+    <div>Age:</div>
+    <input type="number"
+           formControlName="age"
+           name="age"
+           min="0">
+
+    <div>Has sex?</div>
+    <input type="checkbox"
+           name="selectSex"
+           formControlName="selectSex">
+
+    <ng-container *ngIf="facade.getValue('selectSex')">
+      <div>Sex:</div>
+      <select *ffSelectModelManager="facade; key: 'sex'; let manager"
+              formControlName="sex">
+        <option *ngFor="let option of manager.getValues()"
+                [value]="option.id">
+          {{option.name}}
+        </option>
+      </select>
+    </ng-container>
+  </div>
 </form>
 
 <pre>{{ facade.group.value | json }}</pre>
