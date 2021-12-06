@@ -6,7 +6,7 @@ import { debounceTime, distinctUntilChanged, startWith } from 'rxjs/operators';
 import { ISelectModel, SelectModelManager } from './definitions/select-model';
 import { FormArrayWithWarning, FormControlWithWarning, IControlWithWarning } from './form-control-with-warning';
 import { CUSTOM_VALIDATOR_SYMBOL, IDisabledWhenField, IFormArrayDefinition, IFormDefinition, IFormDefinitionExtras, IFormErrors, IFormGroupDefinition, IFormGroupValidatorDefinition } from './definitions/form-group-facade.interfaces';
-import { FORM_GROUP_FACADE_SYMBOL, IOuterFormPropName, isDisabledWhenMultipleFields, isFormDefinitionArrayWithControlBuilder } from './utils/helpers';
+import { FORM_GROUP_FACADE_SYMBOL, isDisabledWhenMultipleFields, isFormDefinitionArrayWithControlBuilder } from './utils/helpers';
 
 export class FormFacade<T>
 {
@@ -259,9 +259,9 @@ export class FormFacade<T>
     return model ? model.selectedValue : null;
   }
 
-  markAsDependent(key1: keyof T | AbstractControl, key2: keyof T, markAsDirty = true)
+  markAsDependent(key1: keyof T, key2: keyof T, markAsDirty = true)
   {
-    (key1 instanceof AbstractControl ? key1 : this.getControl(key1)).valueChanges.pipe(
+    this.getControl(key1).valueChanges.pipe(
       distinctUntilChanged(),
       debounceTime(0)
     ).subscribe(() =>
@@ -350,23 +350,14 @@ export class FormFacade<T>
       const control = this.getControl(key as keyof T);
       if(control.validator)
       {
-        let props: (keyof T | IOuterFormPropName<any, any>)[] = control.validator[CUSTOM_VALIDATOR_SYMBOL];
+        let props: (keyof T)[] = control.validator[CUSTOM_VALIDATOR_SYMBOL];
 
         if(!props)
           props = [];
 
         forEach(props, p =>
         {
-          let param: keyof T | AbstractControl;
-          if(isString(p))
-            param = p as keyof T;
-          else
-          {
-            const outerForm = p as IOuterFormPropName<any, any>;
-            param = outerForm.facade.getControl(outerForm.propName);
-          }
-
-          this.markAsDependent(param, key as keyof T, extras.markDependentAsDirty);
+          this.markAsDependent(p, key as keyof T, extras.markDependentAsDirty);
         });
       }
     });

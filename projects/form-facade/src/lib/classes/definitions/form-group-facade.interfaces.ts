@@ -9,14 +9,6 @@ type ElementOf<T> = T extends any[] ? T[number] : T;
 // WARNING: auto mark as dependent not working for group validators
 export const CUSTOM_VALIDATOR_SYMBOL = Symbol('custom_validator');
 
-export type ValueOrFn<T> = T | (() => T);
-
-export interface IConditionalRequiredPropertyInfo<I, K extends keyof I>
-{
-  propName: K;
-  value: ValueOrFn<I[K]>;
-}
-
 export enum ValidationStatus
 {
   VALID = 'VALID',

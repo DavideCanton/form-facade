@@ -1,8 +1,8 @@
 import { FormControl, Validators } from '@angular/forms';
 
 import { ValidationStatus } from './definitions/form-group-facade.interfaces';
-import { FormArrayWithWarning, FormControlWithWarning } from './form-control-with-warning';
-import { FormFacadeValidators } from './validators/validators';
+import { FormArrayWithWarning, FormControlWithWarning, FormGroupWithWarning } from './form-control-with-warning';
+import { makeValidatorWarning } from './validators/validators';
 
 describe('FormControlWithWarning', () =>
 {
@@ -63,7 +63,7 @@ describe('FormControlWithWarning', () =>
   {
     const c = new FormControlWithWarning(
       'ciao',
-      FormFacadeValidators.makeValidatorWarning(Validators.required)
+      makeValidatorWarning(Validators.required)
     );
     expect(c.hasWarnings).toBe(false);
     c.setValue('');
@@ -134,7 +134,7 @@ describe('FormArrayWithWarning', () =>
   {
     const c = new FormArrayWithWarning(
       [],
-      FormFacadeValidators.makeValidatorWarning(control => control.value.length > 0 ? null : { invalid: true })
+      makeValidatorWarning(control => control.value.length > 0 ? null : { invalid: true })
     );
 
     expect(c.hasWarnings).toBe(true);
@@ -152,6 +152,88 @@ describe('FormArrayWithWarning', () =>
     expect(c.status).toBe(ValidationStatus.VALID);
 
     c.insert(0, new FormControl());
+    expect(c.hasWarnings).toBe(false);
+  });
+});
+
+describe('FormGroupWithWarning', () =>
+{
+  it('should add warnings correctly', () =>
+  {
+    const c = new FormGroupWithWarning({
+      ctrl: new FormControlWithWarning(''),
+    });
+    expect(c.hasWarnings).toBe(false);
+    expect(c.warnings).toBeNull();
+    c.addWarning({ required: true });
+    c.addWarning({ max: true });
+    expect(c.hasWarnings).toBe(true);
+    expect(c.warnings).toEqual({ required: true, max: true });
+  });
+
+  it('should set warnings correctly on children', () =>
+  {
+    const ctrl = new FormControlWithWarning('');
+    const c = new FormGroupWithWarning({ ctrl });
+    expect(ctrl.hasWarnings).toBe(false);
+    expect(ctrl.warnings).toBeNull();
+    expect(c.hasWarnings).toBe(false);
+    expect(c.warnings).toBeNull();
+
+    ctrl.addWarning({ required: true });
+    ctrl.addWarning({ max: true });
+    expect(ctrl.hasWarnings).toBe(true);
+    expect(ctrl.warnings).toEqual({ required: true, max: true });
+    expect(c.hasWarnings).toBe(false);
+    expect(c.warnings).toBeNull();
+  });
+
+  it('should validate correctly', () =>
+  {
+    const validator = (ctrl: FormControl) => ctrl.value.length > 0 ? null : { invalid: '' };
+    const c = new FormGroupWithWarning({
+      ctrl1: new FormControl('', validator),
+      ctrl2: new FormControl('', validator),
+    });
+
+    expect(c.invalid).toBe(true);
+    expect(c.pristine).toBe(true);
+
+    c.setValue({ ctrl1: 'a', ctrl2: 'b' });
+    c.markAsDirty();
+
+    expect(c.valid).toBe(true);
+    expect(c.dirty).toBe(true);
+
+    c.setValue({ ctrl1: '', ctrl2: 'b' });
+
+    expect(c.invalid).toBe(true);
+  });
+
+  it('should remove warnings when disabling', () =>
+  {
+    const c = new FormGroupWithWarning(
+      {
+        ctrl: new FormControlWithWarning(''),
+      },
+      makeValidatorWarning(control => control.value.ctrl.length > 0 ? null : { invalid: true })
+    );
+
+    expect(c.hasWarnings).toBe(true);
+    c.patchValue({ ctrl: 'a' });
+    expect(c.hasWarnings).toBe(false);
+    c.patchValue({ ctrl: '' });
+    expect(c.hasWarnings).toBe(true);
+
+    c.disable();
+    expect(c.hasWarnings).toBe(false);
+    expect(c.status).toBe(ValidationStatus.DISABLED);
+
+    c.enable();
+    expect(c.hasWarnings).toBe(true);
+    expect(c.status).toBe(ValidationStatus.VALID);
+
+    c.patchValue({ ctrl: 'a' });
     expect(c.hasWarnings).toBe(false);
   });
 });

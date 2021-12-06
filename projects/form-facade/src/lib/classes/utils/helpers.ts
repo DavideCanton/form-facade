@@ -1,13 +1,7 @@
-import { has, isFunction, isNil, keys, reduce } from 'lodash';
+import { has, keys, reduce } from 'lodash';
 
-import { IDisabledWhenField, IDisabledWhenMultipleFields, IFormArrayDefinition, IFormDefinition, ValueOrFn } from '../definitions/form-group-facade.interfaces';
-import { FormFacade } from '../form-facade';
+import { IDisabledWhenField, IDisabledWhenMultipleFields, IFormArrayDefinition, IFormDefinition } from '../definitions/form-group-facade.interfaces';
 
-export interface IOuterFormPropName<T, K extends keyof T>
-{
-  facade: FormFacade<T>;
-  propName: K;
-}
 
 export function isFormDefinitionArrayWithControlBuilder(v: IFormDefinition<any>): v is Required<IFormArrayDefinition<any>>
 {
@@ -21,18 +15,6 @@ export function isDisabledWhenMultipleFields<T>(v: IDisabledWhenMultipleFields<T
 
 export const FORM_GROUP_FACADE_SYMBOL = Symbol('form-group-facade-ref');
 
-export function getValue<T>(value: ValueOrFn<T>): T
-{
-  if (isFunction(value))
-    return value();
-  else
-    return value;
-}
-
-export function isNullUndefinedEmpty(val: any): boolean
-{
-  return isNil(val) || val === '';
-}
 
 /**
  * Formats the template by using elements in args array. The placeholders are replaced by position.

@@ -1,146 +1,72 @@
-import { AbstractControl, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { assign, compact, every, flatten, groupBy, identity, isNil, isNull, isString, map, some, uniq } from 'lodash';
+import { ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { chain, flatten, identity } from 'lodash';
 
-import { CUSTOM_VALIDATOR_SYMBOL, IConditionalRequiredPropertyInfo, ValueOrFn } from '../definitions/form-group-facade.interfaces';
+import { CUSTOM_VALIDATOR_SYMBOL } from '../definitions/form-group-facade.interfaces';
 import { FormControlWithWarning } from '../form-control-with-warning';
-import { FormFacade } from '../form-facade';
-import { getValue, IOuterFormPropName, isNullUndefinedEmpty } from '../utils/helpers';
 
-
-type Dependents<I> = keyof I | symbol | IOuterFormPropName<any, any>;
-
-// @dynamic
-export class FormFacadeValidators
+/**
+ * Combines validators using `Validators.compose` but keeping the dependencies.
+ * @param validators the validators to compose
+ * @returns a new validator function
+ */
+export function composeValidators(validators: ValidatorFn[]): ValidatorFn
 {
-  static conditionalValidation(predicate: () => boolean, validatorFn: ValidatorFn): ValidatorFn
+  const dependents = getDependents(validators);
+  const fn = Validators.compose(validators)!;
+  return makeDependentValidator(chain(dependents).flatten().uniq().value(), fn);
+}
+
+/**
+ * Decorates the provided validator by transforming it into a one that always
+ * returns null, but sets warnings on the control.
+ *
+ * @param validator the validator to decorate
+ * @param transformFn an optional function to transform the validation errors
+ * @returns the decorated validator function
+ */
+export function makeValidatorWarning(
+  validator: ValidatorFn,
+  transformFn: (errors: ValidationErrors) => ValidationErrors = identity
+): ValidatorFn
+{
+  const warningValidatorFn = (ctrl: FormControlWithWarning) =>
   {
-    const dependents = FormFacadeValidators.getDependents([validatorFn]);
-    const newValidatorFn = (ctrl: AbstractControl) =>
-    {
-      const shouldValidate = predicate();
-      if(!shouldValidate) return null;
-      return validatorFn(ctrl);
-    };
+    const output = validator(ctrl);
+    if(output)
+      ctrl.addWarning(transformFn(output));
+    return null;
+  };
+  return makeDependentValidator(validator[CUSTOM_VALIDATOR_SYMBOL], warningValidatorFn);
+}
 
-    return FormFacadeValidators.makeDependentValidator(flatten(dependents), newValidatorFn);
-  }
-
-  static conditionalRequired<I>(prop: IConditionalRequiredPropertyInfo<I, keyof I>, customMessage = ''): ValidatorFn
+/**
+ * Creates a new validator function that is dependent on the provided property names.
+ * @param prop the property names to depend on
+ * @param validator the validator to decorate
+ * @returns the decorated validator function
+ */
+export function makeDependentValidator<I>(prop: (keyof I)[], validator: ValidatorFn): ValidatorFn
+{
+  if(prop)
   {
-    return FormFacadeValidators.conditionalRequiredMultiple([prop], customMessage);
+    validator[CUSTOM_VALIDATOR_SYMBOL] = validator[CUSTOM_VALIDATOR_SYMBOL] ?? [];
+    validator[CUSTOM_VALIDATOR_SYMBOL].push(...prop);
   }
+  return validator;
+}
 
-  static conditionalRequiredFromGroup<I>(formFacade: FormFacade<I>, prop: IConditionalRequiredPropertyInfo<I, keyof I>, customMessage = ''): ValidatorFn
-  {
-    const fn = (ctrl: AbstractControl) =>
-    {
-      const { propName, value } = prop;
-      const condition = formFacade.getValue(propName);
-      const shouldValidate = FormFacadeValidators.isSameValueRequired(condition, value);
-      return FormFacadeValidators.validateField(shouldValidate, ctrl, 'conditionalRequired', customMessage);
-    };
-    return FormFacadeValidators.makeDependentValidator([{ facade: formFacade, propName: prop.propName }], fn);
-  }
-
-  static conditionalRequiredMultiple<I>(props: IConditionalRequiredPropertyInfo<I, keyof I>[], customMessage = ''): ValidatorFn
-  {
-    const fn = (ctrl: AbstractControl) =>
-    {
-      const valuesForValidation = groupBy(props, p => p.propName);
-
-      const shouldValidate = every(valuesForValidation, <K extends keyof I>(propArray: IConditionalRequiredPropertyInfo<I, K>[]) =>
-      {
-        return some(propArray, ({ propName, value }) =>
-        {
-          const NO_FACADE = {};
-          const condition = FormFacade.getFacadeFromChildControl(ctrl)?.getValue(propName) ?? NO_FACADE;
-          if(condition === NO_FACADE) return false;
-          return FormFacadeValidators.isSameValueRequired(condition, value);
-        });
-      });
-
-      return FormFacadeValidators.validateField(shouldValidate, ctrl, 'conditionalRequired', customMessage);
-    };
-    return FormFacadeValidators.makeDependentValidator(map(props, p => p.propName), fn);
-  }
-
-  static validateField(shouldValidate: boolean, ctrl: AbstractControl, validatorName: string, customMessage = ''): ValidationErrors | null
-  {
-    if(!shouldValidate) return null;
-
-    const valueToValidate = ctrl.value;
-    if(FormFacadeValidators.hasValue(valueToValidate)) return null;
-
-    const obj = {} as any;
-    if(customMessage) obj.errorMessage = customMessage;
-
-    return {
-      [validatorName]: obj
-    } as ValidationErrors;
-  }
-
-  static isSameValueRequired<T>(condition: any, value: ValueOrFn<T>): boolean
-  {
-    return FormFacadeValidators.hasValue(condition) && condition === getValue(value);
-  }
-
-  static hasValue(condition: any): boolean
-  {
-    let hasValue: boolean;
-    if(isString(condition))
-      hasValue = !isNullUndefinedEmpty(condition);
-    else
-      hasValue = !isNil(condition);
-    return hasValue;
-  }
-
-  static composeValidators(validators: ValidatorFn[]): ValidatorFn
-  {
-    const dependents = this.getDependents(validators);
-    const fn = Validators.compose(validators)!;
-    return FormFacadeValidators.makeDependentValidator(flatten(dependents), fn);
-  }
-
-  static orValidators(validators: ValidatorFn[]): ValidatorFn
-  {
-    const dependents = this.getDependents(validators);
-    const fn = (ctrl: AbstractControl) =>
-    {
-      const values = map(validators, v => v(ctrl));
-      if(some(values, v => isNull(v))) return null;
-      return assign({}, ...values);
-    };
-    return FormFacadeValidators.makeDependentValidator(flatten(dependents), fn);
-  }
-
-  static makeValidatorWarning(fn: ValidatorFn, transformFn: (errors: ValidationErrors) => ValidationErrors = identity): ValidatorFn
-  {
-    const warningValidatorFn = (c: FormControlWithWarning) =>
-    {
-      const output = fn(c);
-      if(output)
-        c.addWarning(transformFn(output));
-      return null;
-    };
-    return FormFacadeValidators.makeDependentValidator(fn[CUSTOM_VALIDATOR_SYMBOL], warningValidatorFn);
-  }
-
-  /**
-   * Creates a dependent validator.
-   * The first argument is the array of properties that this validator depends on.
-   */
-  static makeDependentValidator<I>(prop: Dependents<I>[], fn: ValidatorFn): ValidatorFn
-  {
-    if(prop)
-    {
-      fn[CUSTOM_VALIDATOR_SYMBOL] = fn[CUSTOM_VALIDATOR_SYMBOL] || [];
-      fn[CUSTOM_VALIDATOR_SYMBOL].push(...prop);
-    }
-    return fn;
-  }
-
-  private static getDependents(validators: ValidatorFn[]): Dependents<any>[]
-  {
-    return uniq(compact(map(validators, f => f[CUSTOM_VALIDATOR_SYMBOL])));
-  }
+/**
+ * Returns the property names that the provided validators are dependent on.
+ * @param validators the validators to inspect
+ * @returns the property names that the provided validators are dependent on
+ */
+export function getDependents(validators: ValidatorFn | ValidatorFn[]): (string | number)[]
+{
+  return chain([validators])
+    .flatten()
+    .map(f => f[CUSTOM_VALIDATOR_SYMBOL])
+    .flatten()
+    .compact()
+    .uniq()
+    .value();
 }

@@ -1,3 +1,4 @@
+import { fakeAsync } from '@angular/core/testing';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { every, has } from 'lodash';
 import { BehaviorSubject } from 'rxjs';
@@ -5,7 +6,7 @@ import { map } from 'rxjs/operators';
 
 import { FormArrayWithWarning, FormControlWithWarning } from './form-control-with-warning';
 import { FormFacade } from './form-facade';
-import { FormFacadeValidators } from './validators/validators';
+import { composeValidators, makeValidatorWarning } from './validators/validators';
 
 interface IFormModel
 {
@@ -42,8 +43,8 @@ describe('FormFacade', () =>
     const facade = new FormFacade<IFormModel>({
       name: {
         initialValue: 'aa',
-        validator: FormFacadeValidators.composeValidators([
-          FormFacadeValidators.makeValidatorWarning(Validators.pattern(/^A.+/)),
+        validator: composeValidators([
+          makeValidatorWarning(Validators.pattern(/^A.+/)),
           Validators.minLength(3)
         ])
       },
@@ -74,14 +75,14 @@ describe('FormFacade', () =>
     expect(has(facade.errors, 'name.minlength')).toBe(true);
   });
 
-  it('should work with warnings and validators mixed', () =>
+  it('should work with warnings', () =>
   {
     const facade = new FormFacade<IFormModel>({
       name: { initialValue: 'aa', },
       surname: { initialValue: '' },
       age: {
         initialValue: 4,
-        validator: FormFacadeValidators.makeValidatorWarning(Validators.min(5), (err) => ({ ...err, test: true }))
+        validator: makeValidatorWarning(Validators.min(5), (err) => ({ ...err, test: true }))
       }
     });
 
@@ -114,12 +115,12 @@ describe('FormFacade', () =>
     const facade = new FormFacade<I>({
       ns: {
         initialValue: [],
-        controlBuilder: () => new FormControlWithWarning('', FormFacadeValidators.composeValidators([
-          FormFacadeValidators.makeValidatorWarning(Validators.pattern(/^A.+/)),
+        controlBuilder: () => new FormControlWithWarning('', composeValidators([
+          makeValidatorWarning(Validators.pattern(/^A.+/)),
           Validators.minLength(3)
         ])),
-        validator: FormFacadeValidators.composeValidators([
-          FormFacadeValidators.makeValidatorWarning(arrayLengthGt(3)),
+        validator: composeValidators([
+          makeValidatorWarning(arrayLengthGt(3)),
           arrayLengthGt(0)
         ])
       },
@@ -128,14 +129,14 @@ describe('FormFacade', () =>
         controlBuilder: () => ({
           n: {
             initialValue: '',
-            validator: FormFacadeValidators.composeValidators([
-              FormFacadeValidators.makeValidatorWarning(Validators.pattern(/^A.+/)),
+            validator: composeValidators([
+              makeValidatorWarning(Validators.pattern(/^A.+/)),
               Validators.minLength(3)
             ])
           }
         }),
-        validator: FormFacadeValidators.composeValidators([
-          FormFacadeValidators.makeValidatorWarning(arrayLengthGt(3)),
+        validator: composeValidators([
+          makeValidatorWarning(arrayLengthGt(3)),
           arrayLengthGt(0)
         ])
       }
