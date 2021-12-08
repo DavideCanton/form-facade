@@ -366,7 +366,7 @@ export class FormFacade<T>
   private initControl(definition: IFormGroupDefinition<T>[keyof T], controls: Record<keyof T, AbstractControl>, k: string)
   {
     let obs: Observable<boolean>[] = [];
-    let joinFn = some;
+    let joiner = some;
 
     if(definition.disabledWhen)
     {
@@ -380,7 +380,7 @@ export class FormFacade<T>
         else
         {
           disableWhenConditions.push(...definition.disabledWhen.conditions);
-          joinFn = definition.disabledWhen.joinFn || joinFn;
+          joiner = definition.disabledWhen.joiner ?? joiner;
         }
 
         obs = map(disableWhenConditions, d =>
@@ -398,7 +398,7 @@ export class FormFacade<T>
       ...obs
     ]).subscribe(([formDisabled, ...controlDisabled]) =>
     {
-      if(joinFn(controlDisabled) || formDisabled)
+      if(joiner(controlDisabled) || formDisabled)
         control.disable();
       else
         control.enable();

@@ -261,7 +261,7 @@ describe('FormFacade', () =>
     expect(facade.getControl('name').disabled).toBe(true);
   });
 
-  it('should disable fields correctly from multiple conditions with default joinFn', () =>
+  it('should disable fields correctly from multiple conditions with default joiner', () =>
   {
     const facade = new FormFacade<IFormModel>({
       name: {
@@ -295,7 +295,7 @@ describe('FormFacade', () =>
     expect(facade.getControl('name').disabled).toBe(false);
   });
 
-  it('should disable fields correctly from multiple conditions with custom joinFn', () =>
+  it('should disable fields correctly from multiple conditions with custom joiner', () =>
   {
     const facade = new FormFacade<IFormModel>({
       name: {
@@ -311,7 +311,7 @@ describe('FormFacade', () =>
               operator: map(surname => surname.length > 0)
             }
           ],
-          joinFn: every
+          joiner: every
         }
       },
       surname: { initialValue: '' },
