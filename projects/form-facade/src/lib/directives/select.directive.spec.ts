@@ -1,11 +1,11 @@
 import { ReactiveFormsModule } from '@angular/forms';
 import { createDirectiveFactory, SpectatorDirective } from '@ngneat/spectator';
 import { FormFacade } from 'projects/form-facade/src/public_api';
-import { SelectModelManagerDirective } from './select-model-manager.directive';
+import { SelectDirective } from './select.directive';
 
 const template = `
   <form [formGroup]="facade.group">
-    <select *ffSelectModelManager="facade; key: 'value'; let manager"
+    <select *ffSelect="facade; key: 'value'; let manager"
             formControlName="value">
       <option *ngFor="let option of manager.getValues()"
               [value]="option.id">
@@ -22,10 +22,10 @@ interface F
 
 describe('SelectModelManagerDirective', () =>
 {
-  let spectator: SpectatorDirective<SelectModelManagerDirective<F>>;
+  let spectator: SpectatorDirective<SelectDirective<F>>;
   let facade: FormFacade<F>;
-  const factory = createDirectiveFactory<SelectModelManagerDirective<F>>({
-    directive: SelectModelManagerDirective,
+  const factory = createDirectiveFactory<SelectDirective<F>>({
+    directive: SelectDirective,
     imports: [ReactiveFormsModule],
   });
 

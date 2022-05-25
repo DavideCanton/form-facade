@@ -1,1 +1,1 @@
-export * from './select-model-manager.directive';
+export * from './select.directive';

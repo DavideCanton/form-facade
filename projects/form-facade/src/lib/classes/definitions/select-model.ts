@@ -1,15 +1,15 @@
 import { find } from 'lodash';
 
-export interface ISelectModel
+export interface ISelect
 {
   id: string;
   name: string;
   category?: string;
 }
 
-export class SelectModelManager
+export class SelectManager
 {
-  private _values: ISelectModel[] = [];
+  private _values: ISelect[] = [];
   private _selectedId: string | null;
 
   constructor()
@@ -17,7 +17,7 @@ export class SelectModelManager
     this.setSelectedId(null);
   }
 
-  get selectedValue(): ISelectModel | null
+  get selectedValue(): ISelect | null
   {
     return this.hasSelectedItem ? this.findValue(this.getSelectedId()!) : null;
   }
@@ -27,12 +27,12 @@ export class SelectModelManager
     return this.getSelectedId() !== null;
   }
 
-  getValues(): ISelectModel[]
+  getValues(): ISelect[]
   {
     return this._values;
   }
 
-  setValues(values: ISelectModel[])
+  setValues(values: ISelect[])
   {
     this._values = values;
   }
@@ -49,7 +49,7 @@ export class SelectModelManager
 
   setSelectedId(id: string | null): boolean
   {
-    if (!id || this.findValue(id))
+    if(!id || this.findValue(id))
     {
       this._selectedId = id;
       return true;
@@ -57,7 +57,7 @@ export class SelectModelManager
     return false;
   }
 
-  findValue(id: string): ISelectModel | null
+  findValue(id: string): ISelect | null
   {
     return find(this.getValues(), { id }) || null;
   }

@@ -7,7 +7,7 @@
       "root": "projects/form-facade",
       "sourceRoot": "projects/form-facade/src",
       "projectType": "library",
-      "prefix": "lib",
+      "prefix": "ff",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",

@@ -21,7 +21,11 @@ describe('composeValidators', () =>
 {
   it('should compose validators and keep dependents correctly', () =>
   {
-    interface IData { value: string; value2: string; }
+    interface IData
+    {
+      value: string;
+      value2: string;
+    }
 
     const validator = composeValidators([
       makeDependentValidator<IData>(

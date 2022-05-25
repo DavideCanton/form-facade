@@ -1,6 +1,5 @@
 import { fakeAsync } from '@angular/core/testing';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
-import { every, has } from 'lodash';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -53,10 +52,10 @@ describe('FormFacade', () =>
     });
 
     expect(facade.hasWarnings).toBe(true);
-    expect(has(facade.warnings, 'name.pattern')).toBe(true);
+    expect(facade.warnings.name.hasOwnProperty('pattern')).toBe(true);
 
     expect(facade.valid).toBe(false);
-    expect(has(facade.errors, 'name.minlength')).toBe(true);
+    expect(facade.errors.name.hasOwnProperty('minlength')).toBe(true);
 
     facade.patchValues({ name: 'Aaaa' });
 
@@ -72,7 +71,7 @@ describe('FormFacade', () =>
     expect(facade.warnings).toEqual(null);
 
     expect(facade.valid).toBe(false);
-    expect(has(facade.errors, 'name.minlength')).toBe(true);
+    expect(facade.errors.name.hasOwnProperty('minlength')).toBe(true);
   });
 
   it('should work with warnings', () =>
@@ -107,10 +106,7 @@ describe('FormFacade', () =>
     const lengthMsg = (n: number) => 'length not > of ' + n;
     const patternObj = (requiredPattern, actualValue) => ({ requiredPattern, actualValue });
     const minLengthObj = (requiredLength, actualLength) => ({ requiredLength, actualLength });
-    const arrayLengthGt = (n: number) => (ctrl: FormArray) =>
-    {
-      return ctrl.value.length > n ? null : { arrayLengthGt: lengthMsg(n) };
-    };
+    const arrayLengthGt = (n: number) => (ctrl: FormArray) => ctrl.value.length > n ? null : { arrayLengthGt: lengthMsg(n) };
 
     const facade = new FormFacade<I>({
       ns: {
@@ -311,7 +307,7 @@ describe('FormFacade', () =>
               operator: map(surname => surname.length > 0)
             }
           ],
-          joiner: every
+          joiner: v => v.every(x => x)
         }
       },
       surname: { initialValue: '' },

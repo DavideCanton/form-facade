@@ -1,8 +1,8 @@
-import { NgModule } from "@angular/core";
-import { SelectModelManagerDirective } from "./directives/select-model-manager.directive";
+import { NgModule } from '@angular/core';
+import { SelectDirective } from './directives/select.directive';
 
 @NgModule({
-    declarations: [SelectModelManagerDirective],
-    exports: [SelectModelManagerDirective],
+  declarations: [SelectDirective],
+  exports: [SelectDirective],
 })
-export class FormFacadeModule {}
+export class FormFacadeModule { }
