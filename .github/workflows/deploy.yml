@@ -3,8 +3,7 @@ name: Deploy
 on:
   push:
     branches:
-    - versions/13
-    - versions/12
+    - versions/*
 
   workflow_dispatch:
 
