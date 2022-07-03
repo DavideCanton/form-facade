@@ -3,7 +3,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { FormFacadeValidators, FormFacade } from '@mdcc/form-facade';
 import { filter } from 'rxjs/operators';
 
-interface I
+interface Form
 {
   name: string;
   age: number | null;
@@ -18,11 +18,11 @@ interface I
 })
 export class AppComponent implements OnInit
 {
-  facade: FormFacade<I>;
+  facade: FormFacade<Form>;
 
   ngOnInit()
   {
-    this.facade = new FormFacade<I>({
+    this.facade = new FormFacade<Form>({
       name: {
         initialValue: '',
         validator: Validators.required
@@ -32,11 +32,11 @@ export class AppComponent implements OnInit
         validator: FormFacadeValidators.composeValidators([
           Validators.required,
           Validators.min(1),
-          FormFacadeValidators.makeDependentValidator<I>(
+          FormFacadeValidators.makeDependentValidator<Form>(
             ['sex'],
             (ctrl: FormControl) =>
             {
-              const sex = FormFacade.getFacadeFromChildControl<I>(ctrl)?.getValue('sex');
+              const sex = FormFacade.getFacadeFromChildControl<Form>(ctrl)?.getValue('sex');
               if(!sex) return null;
 
               return sex === 'F' ?

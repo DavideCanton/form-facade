@@ -2,17 +2,60 @@ import { AbstractControl, FormArray, FormGroup } from '@angular/forms';
 import { combineLatest, isObservable, Observable, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, startWith } from 'rxjs/operators';
 
-import { ISelect, SelectManager } from './definitions/select-model';
-import { FormArrayWithWarning, FormControlWithWarning, IControlWithWarning } from './form-control-with-warning';
-import { CUSTOM_VALIDATOR_SYMBOL, IDisabledWhenField, IDisabledWhenMultipleFields, IFormArrayDefinition, IFormDefinition, IFormDefinitionExtras, IFormErrors, IFormGroupDefinition, IFormGroupValidatorDefinition } from './definitions/form-group-facade.interfaces';
-import { FORM_GROUP_FACADE_SYMBOL, isDisabledWhenMultipleFields, isFormDefinitionArrayWithControlBuilder } from './utils/helpers';
+import { Select, SelectManager } from './definitions/select-model';
+import { FormArrayW, FormControlW, ControlW } from './form-control-w';
+import { CUSTOM_VALIDATOR_SYMBOL, IDisabledWhenField, DisabledWhenMultipleFields, FormArrayDefinition, FormDefinition, FormDefinitionExtras, FormErrors, FormGroupDefinition, FormGroupValidatorDefinition } from './definitions/form-group-facade.interfaces';
+
+const FORM_GROUP_FACADE_SYMBOL = Symbol('form-group-facade-ref');
+
 
 export class FormFacade<T>
 {
     private innerGroup: FormGroup;
     private selectModels: Partial<Record<keyof T, SelectManager>>;
     private formArrayKeys = new Set<keyof T>();
-    private extraComplete: IFormDefinitionExtras;
+    private extraComplete: FormDefinitionExtras;
+
+    constructor(
+        private formDefinition: FormGroupDefinition<T>,
+        extra?: Partial<FormDefinitionExtras> | null
+    )
+    {
+        this.extraComplete = this.buildDefaultExtras(extra);
+
+        const values: Record<keyof T, AbstractControl> = Object.keys(formDefinition).reduce((vv, key) =>
+        {
+            const valueCast = formDefinition[key] as FormDefinition<any> | FormArrayDefinition<any>;
+            const control = this.createControl(valueCast);
+            if(control instanceof FormArrayW)
+                this.formArrayKeys.add(key as keyof T);
+            return { ...vv, [key]: control };
+        }, {} as Record<keyof T, AbstractControl>);
+
+        this.innerGroup = new FormGroup(values, this.extraComplete.validator, this.extraComplete.asyncValidator);
+        this.innerGroup[FORM_GROUP_FACADE_SYMBOL] = this;
+
+        this.selectModels = {};
+        const selectModelKeys = this.computeSelectModels();
+
+        selectModelKeys.forEach(k =>
+        {
+            const modelManager = this.selectModels[k] = new SelectManager();
+            modelManager.setValues(this.formDefinition[k].select);
+            this.group.get(k)!.valueChanges.subscribe(v => modelManager.setSelectedId(v));
+            const initialValue = this.formDefinition[k as keyof T].initialValue;
+            if(initialValue != null)
+                modelManager.setSelectedId(this.formDefinition[k].initialValue as any);
+        });
+
+        Object.entries<FormGroupDefinition<T>[keyof T]>(formDefinition as any).forEach(([k, v]) =>
+        {
+            this.initControl(v, values, k);
+        });
+
+        if(this.extraComplete.autoMarkAsDependents)
+            this.markDependents(this.extraComplete);
+    }
 
     get group(): FormGroup
     {
@@ -39,9 +82,9 @@ export class FormFacade<T>
         return !!this.warnings;
     }
 
-    get warnings(): IFormErrors<T> | null
+    get warnings(): FormErrors<T> | null
     {
-        const warnings = {} as IFormErrors<T>;
+        const warnings = {} as FormErrors<T>;
 
         Object.keys(this.formDefinition).forEach(k =>
         {
@@ -54,9 +97,9 @@ export class FormFacade<T>
         return Object.keys(warnings).length > 0 ? warnings : null;
     }
 
-    get errors(): IFormErrors<T> | null
+    get errors(): FormErrors<T> | null
     {
-        const errors = {} as IFormErrors<T>;
+        const errors = {} as FormErrors<T>;
 
         if(this.group.errors)
             errors.groupErrors = this.group.errors;
@@ -72,19 +115,13 @@ export class FormFacade<T>
         return Object.keys(errors).length > 0 ? errors : null;
     }
 
+
     static getFormGroupFacade<T>(group: FormGroup): FormFacade<T> | null
     {
         return group[FORM_GROUP_FACADE_SYMBOL] || null;
     }
 
-    static getFacadeFromChildControl<I = any>(ctrl: AbstractControl): FormFacade<I> | null
-    {
-        const parent = ctrl?.parent;
-        if(!parent || !(parent instanceof FormGroup)) return null;
-        return FormFacade.getFormGroupFacade(parent) ?? null;
-    }
-
-    private static buildInnerControlForArray<T>(v: Required<IFormArrayDefinition<T>>, x: T): AbstractControl
+    private static buildInnerControlForArray<T>(v: Required<FormArrayDefinition<T>>, x: T): AbstractControl
     {
         const defOrControl = v.controlBuilder();
         if(defOrControl instanceof AbstractControl)
@@ -98,47 +135,6 @@ export class FormFacade<T>
         return facade.group;
     }
 
-    constructor(
-        private formDefinition: IFormGroupDefinition<T>,
-        extra?: Partial<IFormDefinitionExtras> | null
-    )
-    {
-        this.extraComplete = this.buildDefaultExtras(extra);
-
-        const values: Record<keyof T, AbstractControl> = Object.keys(formDefinition).reduce((vv, key) =>
-        {
-            const valueCast = formDefinition[key] as IFormDefinition<any> | IFormArrayDefinition<any>;
-            const control = this.createControl(valueCast);
-            if(control instanceof FormArrayWithWarning)
-                this.formArrayKeys.add(key as keyof T);
-            return { ...vv, [key]: control };
-        }, {} as Record<keyof T, AbstractControl>);
-
-        this.innerGroup = new FormGroup(values, this.extraComplete.validator, this.extraComplete.asyncValidator);
-        this.innerGroup[FORM_GROUP_FACADE_SYMBOL] = this;
-
-        this.selectModels = {};
-        const selectModelKeys = this.computeSelectModels();
-
-        selectModelKeys.forEach(k =>
-        {
-            const modelManager = this.selectModels[k] = new SelectManager();
-            modelManager.setValues(this.formDefinition[k].select);
-            this.group.get(k)!.valueChanges.subscribe(v => modelManager.setSelectedId(v));
-            const initialValue = this.formDefinition[k as keyof T].initialValue;
-            if(initialValue != null)
-                modelManager.setSelectedId(this.formDefinition[k].initialValue as any);
-        });
-
-        Object.entries<IFormGroupDefinition<T>[keyof T]>(formDefinition).forEach(([k, v]) =>
-        {
-            this.initControl(v, values, k);
-        });
-
-        if(this.extraComplete.autoMarkAsDependents)
-            this.markDependents(this.extraComplete);
-    }
-
     getValues(includeDisabledFields = false): Partial<T>
     {
         if(!includeDisabledFields)
@@ -147,23 +143,24 @@ export class FormFacade<T>
             return this.group.getRawValue();
     }
 
-    updateValidators(def: IFormGroupValidatorDefinition<T>, fireValidators = false)
+    updateValidators(def: FormGroupValidatorDefinition<T>, fireValidators = false)
     {
         Object.keys(def).forEach(k =>
         {
             const key = k as keyof T;
             const vDef = def[key];
             if(!vDef) return;
+            const keyS = String(key);
 
             const control = this.getControl(key);
             if(vDef.validator)
             {
-                if(control.validator) throw new Error(`Validators overridden for control ${key}`);
+                if(control.validator) throw new Error(`Validators overridden for control ${keyS}`);
                 control.setValidators(vDef.validator);
             }
             if(vDef.asyncValidator)
             {
-                if(control.asyncValidator) throw new Error(`Async validators overridden for control ${key}`);
+                if(control.asyncValidator) throw new Error(`Async validators overridden for control ${keyS}`);
                 control.setAsyncValidators(vDef.asyncValidator);
             }
         });
@@ -175,9 +172,9 @@ export class FormFacade<T>
             this.revalidate();
     }
 
-    getControl<K extends keyof T>(key: K): FormControlWithWarning | FormArrayWithWarning
+    getControl<K extends keyof T>(key: K): FormControlW | FormArrayW
     {
-        return this.group.get(key as string)! as FormControlWithWarning | FormArrayWithWarning;
+        return this.group.get(key as string)! as FormControlW | FormArrayW;
     }
 
     hasControl(key: string): boolean
@@ -190,7 +187,7 @@ export class FormFacade<T>
         return this.getControl(key).value;
     }
 
-    patchValues(values: Partial<T>, options?: { onlySelf?: boolean; emitEvent?: boolean; })
+    patchValues(values: Partial<T>, options?: { onlySelf?: boolean; emitEvent?: boolean })
     {
         this.alignFormArrays(values);
         this.group.patchValue(values, options);
@@ -246,13 +243,13 @@ export class FormFacade<T>
         return m || null;
     }
 
-    getSelectValues(key: keyof T): ISelect[] | null
+    getSelectValues(key: keyof T): Select[] | null
     {
         const model = this.getSelectModel(key);
         return model ? model.getValues() : null;
     }
 
-    getSelectValue(key: keyof T): ISelect | null
+    getSelectValue(key: keyof T): Select | null
     {
         const model = this.getSelectModel(key);
         return model ? model.selectedValue : null;
@@ -276,7 +273,7 @@ export class FormFacade<T>
     {
         Object.keys(this.formDefinition).forEach(k =>
         {
-            const control = this.getControl(k as keyof IFormGroupDefinition<T>);
+            const control = this.getControl(k as keyof FormGroupDefinition<T>);
             control.markAsPristine({ onlySelf: true });
             control.markAsUntouched({ onlySelf: true });
             control.updateValueAndValidity();
@@ -287,7 +284,7 @@ export class FormFacade<T>
     {
         Object.keys(this.formDefinition).forEach(k =>
         {
-            const control = this.getControl(k as keyof IFormGroupDefinition<T>);
+            const control = this.getControl(k as keyof FormGroupDefinition<T>);
             if(!onlyInvalid || control.invalid)
             {
                 if(control instanceof FormArray)
@@ -312,7 +309,7 @@ export class FormFacade<T>
         const queue: AbstractControl[] = [];
         Object.keys(this.formDefinition).forEach(k =>
         {
-            const control = this.getControl(k as keyof IFormGroupDefinition<T>);
+            const control = this.getControl(k as keyof FormGroupDefinition<T>);
             queue.push(control);
         });
 
@@ -343,7 +340,7 @@ export class FormFacade<T>
         }
     }
 
-    private markDependents(extras: IFormDefinitionExtras, keysToUpdate: (keyof T)[] | null = null)
+    private markDependents(extras: FormDefinitionExtras, keysToUpdate: (keyof T)[] | null = null)
     {
         Object.keys(this.formDefinition).forEach(key =>
         {
@@ -366,10 +363,10 @@ export class FormFacade<T>
         });
     }
 
-    private initControl(definition: IFormGroupDefinition<T>[keyof T], controls: Record<keyof T, AbstractControl>, k: string)
+    private initControl(definition: FormGroupDefinition<T>[keyof T], controls: Record<keyof T, AbstractControl>, k: string)
     {
         let obs: Observable<boolean>[] = [];
-        let joiner: IDisabledWhenMultipleFields<any>['joiner'] = v => v.some(x => x);
+        let joiner: DisabledWhenMultipleFields<any>['joiner'] = v => v.some(x => x);
 
         if(definition.disabledWhen)
         {
@@ -408,9 +405,9 @@ export class FormFacade<T>
         });
     }
 
-    private buildDefaultExtras(extra?: Partial<IFormDefinitionExtras> | null): IFormDefinitionExtras
+    private buildDefaultExtras(extra?: Partial<FormDefinitionExtras> | null): FormDefinitionExtras
     {
-        const completeExtras = {} as IFormDefinitionExtras;
+        const completeExtras = {} as FormDefinitionExtras;
 
         if(extra && extra.validator)
             completeExtras.validator = _c => this.group ? extra.validator(this.group) : null;
@@ -446,12 +443,12 @@ export class FormFacade<T>
         });
     }
 
-    private createControl(v: IFormDefinition<any> | IFormArrayDefinition<any>): AbstractControl
+    private createControl(v: FormDefinition<any> | FormArrayDefinition<any>): AbstractControl
     {
-        if(isFormDefinitionArrayWithControlBuilder(v))
-            return new FormArrayWithWarning(v.initialValue.map(x => FormFacade.buildInnerControlForArray(v, x)), v.validator, v.asyncValidator);
+        if(isArrayWithCB(v))
+            return new FormArrayW(v.initialValue.map(x => FormFacade.buildInnerControlForArray(v, x)), v.validator, v.asyncValidator);
         else
-            return new FormControlWithWarning(v.initialValue, v.validator, v.asyncValidator);
+            return new FormControlW(v.initialValue, v.validator, v.asyncValidator);
     }
 
     private alignFormArrays(values: Partial<T>): void
@@ -463,8 +460,8 @@ export class FormFacade<T>
             if(this.formArrayKeys.has(k))
             {
                 const valueAsArray = value as unknown as any[];
-                const definition = this.formDefinition[k] as Required<IFormArrayDefinition<T[typeof k]>> & IFormArrayDefinition<any[]>;
-                const formArray = this.getControl(k) as unknown as FormArrayWithWarning;
+                const definition = this.formDefinition[k] as Required<FormArrayDefinition<T[typeof k]>> & FormArrayDefinition<any[]>;
+                const formArray = this.getControl(k) as unknown as FormArrayW;
 
                 valueAsArray.forEach((arrayItem, index) =>
                 {
@@ -481,11 +478,11 @@ export class FormFacade<T>
         });
     }
 
-    private getWarningsOrErrorsForControl(ctrl: AbstractControl & IControlWithWarning, prop: 'errors' | 'warnings'): any
+    private getWarningsOrErrorsForControl(ctrl: AbstractControl & ControlW, prop: 'errors' | 'warnings'): any
     {
         if(!ctrl) return null;
 
-        if(!(ctrl instanceof FormArrayWithWarning))
+        if(!(ctrl instanceof FormArrayW))
             return ctrl[prop];
 
         const suffix = prop === 'errors' ? 'Errors' : 'Warnings';
@@ -509,7 +506,7 @@ export class FormFacade<T>
             }
 
             if(propValue === undefined)
-                propValue = (control as FormControlWithWarning)[prop];
+                propValue = (control as FormControlW)[prop];
 
             if(propValue)
                 arrayStatus[destArrayProp][index] = propValue;
@@ -520,4 +517,15 @@ export class FormFacade<T>
 
         return Object.keys(arrayStatus).length === 0 ? null : arrayStatus;
     }
+}
+
+
+function isArrayWithCB(v: FormDefinition<any>): v is Required<FormArrayDefinition<any>>
+{
+    return !!(v as any).controlBuilder;
+}
+
+function isDisabledWhenMultipleFields<T>(v: DisabledWhenMultipleFields<T> | IDisabledWhenField<T>): v is DisabledWhenMultipleFields<T>
+{
+    return v.hasOwnProperty('conditions');
 }

@@ -1,14 +1,14 @@
 import { FormControl, Validators } from '@angular/forms';
 
 import { ValidationStatus } from './definitions/form-group-facade.interfaces';
-import { FormArrayWithWarning, FormControlWithWarning, FormGroupWithWarning } from './form-control-with-warning';
+import { FormArrayW, FormControlW, FormGroupW } from './form-control-w';
 import { makeValidatorWarning } from './validators/validators';
 
-describe('FormControlWithWarning', () =>
+describe('FormControlW', () =>
 {
   it('should add warnings correctly', () =>
   {
-    const c = new FormControlWithWarning('');
+    const c = new FormControlW('');
     expect(c.hasWarnings).toBe(false);
     expect(c.warnings).toBeNull();
     c.addWarning({ required: true });
@@ -19,7 +19,7 @@ describe('FormControlWithWarning', () =>
 
   it('should set warnings correctly', () =>
   {
-    const c = new FormControlWithWarning('');
+    const c = new FormControlW('');
     expect(c.hasWarnings).toBe(false);
     expect(c.warnings).toBeNull();
     c.setWarning({ required: true });
@@ -30,7 +30,7 @@ describe('FormControlWithWarning', () =>
 
   it('should clear warnings correctly', () =>
   {
-    const c = new FormControlWithWarning('');
+    const c = new FormControlW('');
     expect(c.hasWarnings).toBe(false);
     expect(c.warnings).toBeNull();
     c.addWarning({ required: true });
@@ -44,7 +44,7 @@ describe('FormControlWithWarning', () =>
 
   it('should validate correctly', () =>
   {
-    const c = new FormControlWithWarning('', Validators.required);
+    const c = new FormControlW('', Validators.required);
     expect(c.invalid).toBe(true);
     expect(c.pristine).toBe(true);
 
@@ -61,7 +61,7 @@ describe('FormControlWithWarning', () =>
 
   it('should remove warnings when disabling', () =>
   {
-    const c = new FormControlWithWarning(
+    const c = new FormControlW(
       'ciao',
       makeValidatorWarning(Validators.required)
     );
@@ -79,11 +79,11 @@ describe('FormControlWithWarning', () =>
   });
 });
 
-describe('FormArrayWithWarning', () =>
+describe('FormArrayW', () =>
 {
   it('should add warnings correctly', () =>
   {
-    const c = new FormArrayWithWarning([]);
+    const c = new FormArrayW([]);
     expect(c.hasWarnings).toBe(false);
     expect(c.warnings).toBeNull();
     c.addWarning({ required: true });
@@ -94,8 +94,8 @@ describe('FormArrayWithWarning', () =>
 
   it('should set warnings correctly on children', () =>
   {
-    const ctrl = new FormControlWithWarning();
-    const c = new FormArrayWithWarning([ctrl]);
+    const ctrl = new FormControlW();
+    const c = new FormArrayW([ctrl]);
     expect(ctrl.hasWarnings).toBe(false);
     expect(ctrl.warnings).toBeNull();
     expect(c.hasWarnings).toBe(false);
@@ -111,7 +111,7 @@ describe('FormArrayWithWarning', () =>
 
   it('should validate correctly', () =>
   {
-    const c = new FormArrayWithWarning([]);
+    const c = new FormArrayW([]);
     const validator = (ctrl: FormControl) => ctrl.value.length > 0 ? null : { invalid: '' };
     c.push(new FormControl('', validator));
     c.push(new FormControl('', validator));
@@ -132,7 +132,7 @@ describe('FormArrayWithWarning', () =>
 
   it('should remove warnings when disabling', () =>
   {
-    const c = new FormArrayWithWarning(
+    const c = new FormArrayW(
       [],
       makeValidatorWarning(control => control.value.length > 0 ? null : { invalid: true })
     );
@@ -156,12 +156,12 @@ describe('FormArrayWithWarning', () =>
   });
 });
 
-describe('FormGroupWithWarning', () =>
+describe('FormGroupW', () =>
 {
   it('should add warnings correctly', () =>
   {
-    const c = new FormGroupWithWarning({
-      ctrl: new FormControlWithWarning(''),
+    const c = new FormGroupW({
+      ctrl: new FormControlW(''),
     });
     expect(c.hasWarnings).toBe(false);
     expect(c.warnings).toBeNull();
@@ -173,8 +173,8 @@ describe('FormGroupWithWarning', () =>
 
   it('should set warnings correctly on children', () =>
   {
-    const ctrl = new FormControlWithWarning('');
-    const c = new FormGroupWithWarning({ ctrl });
+    const ctrl = new FormControlW('');
+    const c = new FormGroupW({ ctrl });
     expect(ctrl.hasWarnings).toBe(false);
     expect(ctrl.warnings).toBeNull();
     expect(c.hasWarnings).toBe(false);
@@ -191,7 +191,7 @@ describe('FormGroupWithWarning', () =>
   it('should validate correctly', () =>
   {
     const validator = (ctrl: FormControl) => ctrl.value.length > 0 ? null : { invalid: '' };
-    const c = new FormGroupWithWarning({
+    const c = new FormGroupW({
       ctrl1: new FormControl('', validator),
       ctrl2: new FormControl('', validator),
     });
@@ -212,9 +212,9 @@ describe('FormGroupWithWarning', () =>
 
   it('should remove warnings when disabling', () =>
   {
-    const c = new FormGroupWithWarning(
+    const c = new FormGroupW(
       {
-        ctrl: new FormControlWithWarning(''),
+        ctrl: new FormControlW(''),
       },
       makeValidatorWarning(control => control.value.ctrl.length > 0 ? null : { invalid: true })
     );

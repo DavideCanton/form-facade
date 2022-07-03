@@ -2,7 +2,7 @@ import { ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { chain, flatten, identity } from 'lodash';
 
 import { CUSTOM_VALIDATOR_SYMBOL } from '../definitions/form-group-facade.interfaces';
-import { FormControlWithWarning } from '../form-control-with-warning';
+import { FormControlW } from '../form-control-w';
 
 /**
  * Combines validators using `Validators.compose` but keeping the dependencies.
@@ -29,7 +29,7 @@ export function makeValidatorWarning(
   transformFn: (errors: ValidationErrors) => ValidationErrors = identity
 ): ValidatorFn
 {
-  const warningValidatorFn = (ctrl: FormControlWithWarning) =>
+  const warningValidatorFn = (ctrl: FormControlW) =>
   {
     const output = validator(ctrl);
     if(output)

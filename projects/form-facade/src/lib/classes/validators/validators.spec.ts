@@ -1,7 +1,7 @@
 import { FormControl, Validators } from '@angular/forms';
 import { constant, has } from 'lodash';
 
-import { FormControlWithWarning } from '../form-control-with-warning';
+import { FormControlW } from '../form-control-w';
 import { composeValidators, getDependents, makeDependentValidator, makeValidatorWarning } from './validators';
 
 describe('makeDependentValidator', () =>
@@ -21,18 +21,18 @@ describe('composeValidators', () =>
 {
   it('should compose validators and keep dependents correctly', () =>
   {
-    interface IData
+    interface Data
     {
       value: string;
       value2: string;
     }
 
     const validator = composeValidators([
-      makeDependentValidator<IData>(
+      makeDependentValidator<Data>(
         ['value'],
         Validators.required,
       ),
-      makeDependentValidator<IData>(
+      makeDependentValidator<Data>(
         ['value2'],
         ({ value }) => value.length <= 1 ? { tooShort: true } : null,
       )
@@ -57,7 +57,7 @@ describe('makeValidatorWarning', () =>
   it('should create a warning validator correctly', () =>
   {
     const warningValidator = makeValidatorWarning(Validators.required);
-    const formControl = new FormControlWithWarning('', [warningValidator]);
+    const formControl = new FormControlW('', [warningValidator]);
 
     formControl.updateValueAndValidity();
 
@@ -75,7 +75,7 @@ describe('makeValidatorWarning', () =>
   {
     const warningValidator = makeValidatorWarning(Validators.pattern(/^A.+/));
     const maxLengthValidator = Validators.minLength(3);
-    const formControl = new FormControlWithWarning('aa', [
+    const formControl = new FormControlW('aa', [
       warningValidator,
       maxLengthValidator
     ]);

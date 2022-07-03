@@ -2,7 +2,7 @@ import { Directive, Input, OnChanges, OnDestroy, TemplateRef, ViewContainerRef, 
 import { FormFacade } from '../classes/form-facade';
 import { SelectManager } from '../classes/definitions/select-model';
 
-export interface ISelectModelManagerContext
+export interface SelectModelManagerContext
 {
   $implicit: SelectManager;
 }
@@ -28,7 +28,7 @@ export class SelectDirective<T> implements OnChanges, OnDestroy
 
   // Make sure the template checker knows the type of the context with which the
   // template of this directive will be rendered
-  static ngTemplateContextGuard(dir: SelectDirective<any>, ctx: unknown): ctx is ISelectModelManagerContext
+  static ngTemplateContextGuard(dir: SelectDirective<any>, ctx: unknown): ctx is SelectModelManagerContext
   {
     return true;
   }
@@ -36,7 +36,7 @@ export class SelectDirective<T> implements OnChanges, OnDestroy
   ngOnChanges()
   {
     let operation = null;
-    let context: ISelectModelManagerContext | null = null;
+    let context: SelectModelManagerContext | null = null;
 
     if(this.facade && this.key)
     {
@@ -69,12 +69,12 @@ export class SelectDirective<T> implements OnChanges, OnDestroy
     this.destroyView();
   }
 
-  createView(context: ISelectModelManagerContext)
+  createView(context: SelectModelManagerContext)
   {
     this.viewRef = this.container.createEmbeddedView(this.template, context);
   }
 
-  updateView(context: ISelectModelManagerContext)
+  updateView(context: SelectModelManagerContext)
   {
     this.destroyView();
     this.createView(context);

@@ -1,7 +1,7 @@
 import { AbstractControl, AsyncValidatorFn, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { Observable, OperatorFunction } from 'rxjs';
 
-import { ISelect } from './select-model';
+import { Select } from './select-model';
 
 type ElementOf<T> = T extends any[] ? T[number] : T;
 
@@ -41,7 +41,7 @@ export type IDisabledWhenField<T, TK extends keyof T = keyof T> = {
  * It executes all the conditions using {@link combineLatest}, then joins the outcomes
  * using the provided {@link joiner}, or {@link _.some} if no {@link joiner} is provided.
  */
-export interface IDisabledWhenMultipleFields<T>
+export interface DisabledWhenMultipleFields<T>
 {
   /** the array of conditions, depending on multiple fields */
   conditions: IDisabledWhenField<T>[];
@@ -49,38 +49,38 @@ export interface IDisabledWhenMultipleFields<T>
   joiner?: (b: boolean[]) => boolean;
 }
 
-export interface IFormDefinition<T, TParent = any>
+export interface FormDefinition<T, TParent = any>
 {
   initialValue: T;
   validator?: ValidatorFn;
   asyncValidator?: AsyncValidatorFn;
-  select?: ISelect[];
-  disabledWhen?: Observable<boolean> | IDisabledWhenField<TParent> | IDisabledWhenMultipleFields<TParent>;
+  select?: Select[];
+  disabledWhen?: Observable<boolean> | IDisabledWhenField<TParent> | DisabledWhenMultipleFields<TParent>;
 }
 
-export interface IFormArrayDefinition<T, TParent = any> extends IFormDefinition<T, TParent>
+export interface FormArrayDefinition<T, TParent = any> extends FormDefinition<T, TParent>
 {
   // eslint-disable-next-line no-use-before-define
-  controlBuilder?: () => IFormGroupDefinition<ElementOf<T>> | AbstractControl;
+  controlBuilder?: () => FormGroupDefinition<ElementOf<T>> | AbstractControl;
 }
 
 
 /**
  * Definition of a form group.
- * Each property of {@link T} should be either a {@link IFormArrayDefinition} if the field type is an array, else a {@link IFormDefinition}.
+ * Each property of {@link T} should be either a {@link FormArrayDefinition} if the field type is an array, else a {@link FormDefinition}.
  */
-export type IFormGroupDefinition<T> = {
-  [K in keyof T]: T[K] extends any[] ? IFormArrayDefinition<T[K], T> : IFormDefinition<T[K], T>;
+export type FormGroupDefinition<T> = {
+  [K in keyof T]: T[K] extends any[] ? FormArrayDefinition<T[K], T> : FormDefinition<T[K], T>;
 };
 
 /**
  * Definition of a possible validator or async validator for each property of {@link T}.
  */
-export type IFormGroupValidatorDefinition<T> = Partial<{
-  [K in keyof T]: Pick<IFormDefinition<T[K], T>, 'validator' | 'asyncValidator'>;
+export type FormGroupValidatorDefinition<T> = Partial<{
+  [K in keyof T]: Pick<FormDefinition<T[K], T>, 'validator' | 'asyncValidator'>;
 }>;
 
-export interface IFormDefinitionExtras
+export interface FormDefinitionExtras
 {
   validator: ValidatorFn | null;
   asyncValidator: AsyncValidatorFn | null;
@@ -89,6 +89,6 @@ export interface IFormDefinitionExtras
   disabledWhen$?: Observable<boolean>;
 }
 
-export type IFormErrors<T> = { groupErrors?: ValidationErrors } & {
+export type FormErrors<T> = { groupErrors?: ValidationErrors } & {
   [K in keyof T]?: ValidationErrors;
 };

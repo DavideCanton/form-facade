@@ -1,6 +1,4 @@
-import { find } from 'lodash';
-
-export interface ISelect
+export interface Select
 {
   id: string;
   name: string;
@@ -9,7 +7,7 @@ export interface ISelect
 
 export class SelectManager
 {
-  private _values: ISelect[] = [];
+  private _values: Select[] = [];
   private _selectedId: string | null;
 
   constructor()
@@ -17,7 +15,7 @@ export class SelectManager
     this.setSelectedId(null);
   }
 
-  get selectedValue(): ISelect | null
+  get selectedValue(): Select | null
   {
     return this.hasSelectedItem ? this.findValue(this.getSelectedId()!) : null;
   }
@@ -27,12 +25,12 @@ export class SelectManager
     return this.getSelectedId() !== null;
   }
 
-  getValues(): ISelect[]
+  getValues(): Select[]
   {
     return this._values;
   }
 
-  setValues(values: ISelect[])
+  setValues(values: Select[])
   {
     this._values = values;
   }
@@ -57,8 +55,8 @@ export class SelectManager
     return false;
   }
 
-  findValue(id: string): ISelect | null
+  findValue(id: string): Select | null
   {
-    return find(this.getValues(), { id }) || null;
+    return this.getValues().find(p => p.id == id) || null;
   }
 }
