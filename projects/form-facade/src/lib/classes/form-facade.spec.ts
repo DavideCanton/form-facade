@@ -646,10 +646,12 @@ interface Person
         <input id="name" formControlName="name"/>
         <input id="surname" formControlName="surname"/>
         <input id="age" type="number" formControlName="age"/>
-        <input *ngFor="let v of otherNames.controls; index as i" [id]="'name-' + i" [formControl]="v"/>
+        <input class="name-input" *ngFor="let v of otherNames.controls; index as i" [id]="'name-' + i" [formControl]="v"/>
         <ng-container *ngFor="let v of addresses.controls; index as i" [formGroup]="v">
+            <div class="address-block">
         <input [id]="'street-' + i" formControlName="street"/>
         <input [id]="'street-number-' + i" formControlName="streetNumber"/>
+</div>
         </ng-container>
 
     </form>
@@ -723,6 +725,49 @@ fdescribe('FormFacade in a component', () =>
         expect(getControl('#name-1').value).toBe('name2');
         expect(getControl('#street-0').value).toBe('street1');
         expect(getControl('#street-number-0').value).toBe('1');
+    });
+
+    it('should update the form from the model', () =>
+    {
+        component.facade.patchValues({ name: 'new name' });
+        fixture.detectChanges();
+        expect(getControl('#name').value).toBe('new name');
+
+        component.facade.patchValues({
+            otherNames: [
+                'name1',
+                'name3'
+            ]
+        });
+        fixture.detectChanges();
+        let elements = fixture.debugElement.queryAll(By.css('.name-input'));
+        expect(elements.length).toBe(2);
+        expect(getControl('#name-0').value).toBe('name1');
+        expect(getControl('#name-1').value).toBe('name3');
+
+        component.facade.patchValues({
+            otherNames: [
+                'name1',
+                'name2',
+                'name3'
+            ]
+        });
+        fixture.detectChanges();
+        elements = fixture.debugElement.queryAll(By.css('.name-input'));
+        expect(elements.length).toBe(3);
+        expect(getControl('#name-0').value).toBe('name1');
+        expect(getControl('#name-1').value).toBe('name2');
+        expect(getControl('#name-2').value).toBe('name3');
+
+        component.facade.patchValues({
+            otherNames: [
+                'name1'
+            ]
+        });
+        fixture.detectChanges();
+        elements = fixture.debugElement.queryAll(By.css('.name-input'));
+        expect(elements.length).toBe(1);
+        expect(getControl('#name-0').value).toBe('name1');
     });
 
     function getControl(selector: string): HTMLInputElement
