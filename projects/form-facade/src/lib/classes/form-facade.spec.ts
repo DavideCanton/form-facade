@@ -1,6 +1,6 @@
 import { Component, ComponentFactory, OnInit } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { UntypedFormArray, UntypedFormControl, UntypedFormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -34,7 +34,7 @@ describe('FormFacade', () =>
 
     it('should return null if group is not build from a facade', () =>
     {
-        const group = new FormGroup({});
+        const group = new UntypedFormGroup({});
 
         expect(FormFacade.getFormGroupFacade<FormModel>(group)).toBeNull();
     });
@@ -108,7 +108,7 @@ describe('FormFacade', () =>
         const lengthMsg = (n: number) => 'length not > of ' + n;
         const patternObj = (requiredPattern, actualValue) => ({ requiredPattern, actualValue });
         const minLengthObj = (requiredLength, actualLength) => ({ requiredLength, actualLength });
-        const arrayLengthGt = (n: number) => (ctrl: FormArray) => ctrl.value.length > n ? null : { arrayLengthGt: lengthMsg(n) };
+        const arrayLengthGt = (n: number) => (ctrl: UntypedFormArray) => ctrl.value.length > n ? null : { arrayLengthGt: lengthMsg(n) };
 
         const facade = new FormFacade<Data>({
             ns: {
@@ -488,7 +488,7 @@ describe('FormFacade', () =>
             ns2: {
                 initialValue: [],
                 disabledWhen: disable,
-                controlBuilder: () => new FormControl('', c => c.value !== '10' ? null : { x3: invalidNumber }),
+                controlBuilder: () => new UntypedFormControl('', c => c.value !== '10' ? null : { x3: invalidNumber }),
                 validator: s => s.value.includes('a') ? null : { a2: missingMsg('a') }
             },
             cs: {
@@ -679,7 +679,7 @@ class TestComponent implements OnInit
             age: { initialValue: 18 },
             otherNames: {
                 initialValue: ['name1', 'name2'],
-                controlBuilder: () => new FormControl('')
+                controlBuilder: () => new UntypedFormControl('')
             },
             addresses: {
                 initialValue: [{ street: 'street1', streetNumber: '1' }],

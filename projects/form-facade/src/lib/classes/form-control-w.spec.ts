@@ -1,4 +1,4 @@
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 
 import { ValidationStatus } from './definitions/form-group-facade.interfaces';
 import { FormArrayW, FormControlW, FormGroupW } from './form-control-w';
@@ -112,9 +112,9 @@ describe('FormArrayW', () =>
   it('should validate correctly', () =>
   {
     const c = new FormArrayW([]);
-    const validator = (ctrl: FormControl) => ctrl.value.length > 0 ? null : { invalid: '' };
-    c.push(new FormControl('', validator));
-    c.push(new FormControl('', validator));
+    const validator = (ctrl: UntypedFormControl) => ctrl.value.length > 0 ? null : { invalid: '' };
+    c.push(new UntypedFormControl('', validator));
+    c.push(new UntypedFormControl('', validator));
 
     expect(c.invalid).toBe(true);
     expect(c.pristine).toBe(true);
@@ -138,7 +138,7 @@ describe('FormArrayW', () =>
     );
 
     expect(c.hasWarnings).toBe(true);
-    c.insert(0, new FormControl());
+    c.insert(0, new UntypedFormControl());
     expect(c.hasWarnings).toBe(false);
     c.removeAt(0);
     expect(c.hasWarnings).toBe(true);
@@ -151,7 +151,7 @@ describe('FormArrayW', () =>
     expect(c.hasWarnings).toBe(true);
     expect(c.status).toBe(ValidationStatus.VALID);
 
-    c.insert(0, new FormControl());
+    c.insert(0, new UntypedFormControl());
     expect(c.hasWarnings).toBe(false);
   });
 });
@@ -190,10 +190,10 @@ describe('FormGroupW', () =>
 
   it('should validate correctly', () =>
   {
-    const validator = (ctrl: FormControl) => ctrl.value.length > 0 ? null : { invalid: '' };
+    const validator = (ctrl: UntypedFormControl) => ctrl.value.length > 0 ? null : { invalid: '' };
     const c = new FormGroupW({
-      ctrl1: new FormControl('', validator),
-      ctrl2: new FormControl('', validator),
+      ctrl1: new UntypedFormControl('', validator),
+      ctrl2: new UntypedFormControl('', validator),
     });
 
     expect(c.invalid).toBe(true);

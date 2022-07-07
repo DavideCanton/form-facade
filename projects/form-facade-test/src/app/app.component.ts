@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { FormFacadeValidators, FormFacade } from '@mdcc/form-facade';
 import { filter } from 'rxjs/operators';
 
@@ -34,7 +34,7 @@ export class AppComponent implements OnInit
           Validators.min(1),
           FormFacadeValidators.makeDependentValidator<Form>(
             ['sex'],
-            (ctrl: FormControl) =>
+            (ctrl: UntypedFormControl) =>
             {
               const sex = FormFacade.getFacadeFromChildControl<Form>(ctrl)?.getValue('sex');
               if(!sex) return null;

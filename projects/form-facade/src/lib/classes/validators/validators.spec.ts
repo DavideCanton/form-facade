@@ -1,4 +1,4 @@
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { constant, has } from 'lodash';
 
 import { FormControlW } from '../form-control-w';
@@ -40,7 +40,7 @@ describe('composeValidators', () =>
 
     expect(getDependents(validator)).toEqual(['value', 'value2']);
 
-    const ctrl = new FormControl('', validator);
+    const ctrl = new UntypedFormControl('', validator);
     expect(ctrl.errors).toEqual({ required: true, tooShort: true });
     expect(ctrl.valid).toBe(false);
     ctrl.setValue('a');

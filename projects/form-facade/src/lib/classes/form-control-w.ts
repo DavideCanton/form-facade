@@ -1,4 +1,4 @@
-import { AbstractControl, AbstractControlOptions, AsyncValidatorFn, FormArray, FormControl, FormGroup, ValidatorFn } from '@angular/forms';
+import { AbstractControl, AbstractControlOptions, AsyncValidatorFn, UntypedFormArray, UntypedFormControl, UntypedFormGroup, ValidatorFn } from '@angular/forms';
 
 export interface Warnings { [key: string]: any }
 
@@ -87,7 +87,7 @@ function initControl(
   control.updateValueAndValidity();
 }
 
-export class FormControlW extends FormControl implements ControlW
+export class FormControlW extends UntypedFormControl implements ControlW
 {
   warnings: Warnings;
   hasWarnings: boolean;
@@ -108,7 +108,7 @@ export class FormControlW extends FormControl implements ControlW
 
 }
 
-export class FormArrayW extends FormArray implements ControlW
+export class FormArrayW extends UntypedFormArray implements ControlW
 {
   warnings: Warnings;
   hasWarnings: boolean;
@@ -128,7 +128,7 @@ export class FormArrayW extends FormArray implements ControlW
   }
 }
 
-export class FormGroupW extends FormGroup implements ControlW
+export class FormGroupW extends UntypedFormGroup implements ControlW
 {
   warnings: Warnings;
   hasWarnings: boolean;

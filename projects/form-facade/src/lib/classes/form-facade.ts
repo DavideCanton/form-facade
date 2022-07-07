@@ -1,4 +1,4 @@
-import { AbstractControl, FormArray, FormGroup } from '@angular/forms';
+import { AbstractControl, UntypedFormArray, UntypedFormGroup } from '@angular/forms';
 import { combineLatest, isObservable, Observable, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, startWith } from 'rxjs/operators';
 
@@ -11,7 +11,7 @@ const FORM_GROUP_FACADE_SYMBOL = Symbol('form-group-facade-ref');
 
 export class FormFacade<T>
 {
-    private innerGroup: FormGroup;
+    private innerGroup: UntypedFormGroup;
     private selectModels: Partial<Record<keyof T, SelectManager>>;
     private formArrayKeys = new Set<keyof T>();
     private extraComplete: FormDefinitionExtras;
@@ -32,7 +32,7 @@ export class FormFacade<T>
             return { ...vv, [key]: control };
         }, {} as Record<keyof T, AbstractControl>);
 
-        this.innerGroup = new FormGroup(values, this.extraComplete.validator, this.extraComplete.asyncValidator);
+        this.innerGroup = new UntypedFormGroup(values, this.extraComplete.validator, this.extraComplete.asyncValidator);
         this.innerGroup[FORM_GROUP_FACADE_SYMBOL] = this;
 
         this.selectModels = {};
@@ -57,7 +57,7 @@ export class FormFacade<T>
             this.markDependents(this.extraComplete);
     }
 
-    get group(): FormGroup
+    get group(): UntypedFormGroup
     {
         return this.innerGroup;
     }
@@ -116,7 +116,7 @@ export class FormFacade<T>
     }
 
 
-    static getFormGroupFacade<T>(group: FormGroup): FormFacade<T> | null
+    static getFormGroupFacade<T>(group: UntypedFormGroup): FormFacade<T> | null
     {
         return group[FORM_GROUP_FACADE_SYMBOL] || null;
     }
@@ -287,7 +287,7 @@ export class FormFacade<T>
             const control = this.getControl(k as keyof FormGroupDefinition<T>);
             if(!onlyInvalid || control.invalid)
             {
-                if(control instanceof FormArray)
+                if(control instanceof UntypedFormArray)
                 {
                     control.controls.forEach(childControl =>
                     {
@@ -318,9 +318,9 @@ export class FormFacade<T>
             const control = queue.pop()!;
             if(!onlyInvalid || control.invalid)
             {
-                if(control instanceof FormArray || control instanceof FormGroup)
+                if(control instanceof UntypedFormArray || control instanceof UntypedFormGroup)
                 {
-                    const controls = control instanceof FormArray ?
+                    const controls = control instanceof UntypedFormArray ?
                         control.controls :
                         Object.entries(control.controls).map(v => v[1]);
 
@@ -498,7 +498,7 @@ export class FormFacade<T>
         {
             let propValue;
 
-            if(control instanceof FormGroup)
+            if(control instanceof UntypedFormGroup)
             {
                 const controlFacade = FormFacade.getFormGroupFacade(control);
                 if(controlFacade)
