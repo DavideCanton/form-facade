@@ -692,7 +692,7 @@ class TestComponent implements OnInit
     }
 }
 
-fdescribe('FormFacade in a component', () =>
+describe('FormFacade in a component', () =>
 {
     let fixture: ComponentFixture<TestComponent>;
     let component: TestComponent;
