@@ -41,11 +41,11 @@ export class FormFacade<T>
         selectModelKeys.forEach(k =>
         {
             const modelManager = this.selectModels[k] = new SelectManager();
-            modelManager.setValues(this.formDefinition[k].select);
-            this.group.get(k)!.valueChanges.subscribe(v => modelManager.setSelectedId(v));
+            modelManager.values = this.formDefinition[k].select;
+            this.group.get(k)!.valueChanges.subscribe(v => { modelManager.selectedId = v; });
             const initialValue = this.formDefinition[k as keyof T].initialValue;
             if(initialValue != null)
-                modelManager.setSelectedId(this.formDefinition[k].initialValue as any);
+                modelManager.selectedId = this.formDefinition[k].initialValue as any;
         });
 
         Object.entries<FormGroupDefinition<T>[keyof T]>(formDefinition as any).forEach(([k, v]) =>
@@ -197,7 +197,7 @@ export class FormFacade<T>
             {
                 const manager = this.getSelectModel(k as keyof T);
                 if(manager)
-                    manager.setSelectedId(v as any);
+                    manager.selectedId = v as any;
             });
         }
     }
@@ -245,14 +245,12 @@ export class FormFacade<T>
 
     getSelectValues(key: keyof T): Select[] | null
     {
-        const model = this.getSelectModel(key);
-        return model ? model.getValues() : null;
+        return this.getSelectModel(key)?.values ?? null;
     }
 
     getSelectValue(key: keyof T): Select | null
     {
-        const model = this.getSelectModel(key);
-        return model ? model.selectedValue : null;
+        return this.getSelectModel(key)?.selectedValue;
     }
 
     markAsDependent(key1: keyof T, key2: keyof T, markAsDirty = true)

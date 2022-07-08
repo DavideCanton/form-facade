@@ -7,7 +7,7 @@ const template = `
   <form [formGroup]="facade.group">
     <select *ffSelect="facade; key: 'value'; let manager"
             formControlName="value">
-      <option *ngFor="let option of manager.getValues()"
+      <option *ngFor="let option of manager.values"
               [value]="option.id">
               {{option.name}}
       </option>
