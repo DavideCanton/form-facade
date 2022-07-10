@@ -5,6 +5,7 @@ import { debounceTime, distinctUntilChanged, startWith } from 'rxjs/operators';
 import { Select, SelectManager } from './definitions/select-model';
 import { FormArrayW, FormControlW, ControlW } from './form-control-w';
 import { CUSTOM_VALIDATOR_SYMBOL, IDisabledWhenField, DisabledWhenMultipleFields, FormArrayDefinition, FormDefinition, FormDefinitionExtras, FormErrors, FormGroupDefinition, FormGroupValidatorDefinition } from './definitions/form-group-facade.interfaces';
+import { forEachObject } from 'projects/form-facade/src/lib/classes/utils/object-utils';
 
 const FORM_GROUP_FACADE_SYMBOL = Symbol('form-group-facade-ref');
 
@@ -48,9 +49,9 @@ export class FormFacade<T>
                 modelManager.selectedId = this.formDefinition[k].initialValue as any;
         });
 
-        Object.entries<FormGroupDefinition<T>[keyof T]>(formDefinition as any).forEach(([k, v]) =>
+        forEachObject(formDefinition, (v, k) =>
         {
-            this.initControl(v, values, k);
+            this.initControl(v as any, values, k);
         });
 
         if(this.extraComplete.autoMarkAsDependents)
@@ -86,13 +87,13 @@ export class FormFacade<T>
     {
         const warnings = {} as FormErrors<T>;
 
-        Object.keys(this.formDefinition).forEach(k =>
+        forEachObject(this.formDefinition, ((_, k) =>
         {
-            const ctrl = this.getControl(k as keyof T);
+            const ctrl = this.getControl(k);
             const controlWarnings = this.getWarningsOrErrorsForControl(ctrl, 'warnings');
             if(controlWarnings)
                 warnings[k] = controlWarnings;
-        });
+        }));
 
         return Object.keys(warnings).length > 0 ? warnings : null;
     }
@@ -104,13 +105,13 @@ export class FormFacade<T>
         if(this.group.errors)
             errors.groupErrors = this.group.errors;
 
-        Object.keys(this.formDefinition).forEach(k =>
+        forEachObject(this.formDefinition, ((_, k) =>
         {
-            const ctrl = this.getControl(k as keyof T);
+            const ctrl = this.getControl(k);
             const controlErrors = this.getWarningsOrErrorsForControl(ctrl, 'errors');
             if(controlErrors)
                 errors[k] = controlErrors;
-        });
+        }));
 
         return Object.keys(errors).length > 0 ? errors : null;
     }
@@ -145,10 +146,8 @@ export class FormFacade<T>
 
     updateValidators(def: FormGroupValidatorDefinition<T>, fireValidators = false)
     {
-        Object.keys(def).forEach(k =>
+        forEachObject(def, ((vDef, key) =>
         {
-            const key = k as keyof T;
-            const vDef = def[key];
             if(!vDef) return;
             const keyS = String(key);
 
@@ -163,7 +162,7 @@ export class FormFacade<T>
                 if(control.asyncValidator) throw new Error(`Async validators overridden for control ${keyS}`);
                 control.setAsyncValidators(vDef.asyncValidator);
             }
-        });
+        }));
 
         if(this.extraComplete.autoMarkAsDependents)
             this.markDependents(this.extraComplete, Object.keys(def) as (keyof T)[]);
@@ -193,12 +192,12 @@ export class FormFacade<T>
         this.group.patchValue(values, options);
         if(options && !options.emitEvent)
         {
-            Object.entries(values).forEach(([k, v]) =>
+            forEachObject(values, ((v, k) =>
             {
-                const manager = this.getSelectModel(k as keyof T);
+                const manager = this.getSelectModel(k);
                 if(manager)
                     manager.selectedId = v as any;
-            });
+            }));
         }
     }
 
