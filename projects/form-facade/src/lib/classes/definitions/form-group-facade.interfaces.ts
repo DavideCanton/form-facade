@@ -42,8 +42,8 @@ export type IDisabledWhenField<T> = {
 export interface DisabledWhenMultipleFields<T> {
   /** the array of conditions, depending on multiple fields */
   conditions: IDisabledWhenField<T>[];
-  /** 
-   * The combination function, defaults to {@link _.some}. 
+  /**
+   * The combination function, defaults to {@link _.some}.
    * The input array keeps the same order of values in {@link conditions}.
    */
   joiner?: (b: boolean[]) => boolean;
@@ -85,7 +85,3 @@ export interface FormDefinitionExtras {
   markDependentAsDirty: boolean;
   disabledWhen$?: Observable<boolean>;
 }
-
-export type FormErrors<T> = { groupErrors?: ValidationErrors } & {
-  [K in keyof T]?: ValidationErrors;
-};

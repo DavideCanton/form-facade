@@ -24,7 +24,7 @@ export function composeValidators(validators: ValidatorFn[]): ValidatorFn
  * @param transformFn an optional function to transform the validation errors
  * @returns the decorated validator function
  */
-export function makeValidatorWarning(
+export function warning(
   validator: ValidatorFn,
   transformFn: (errors: ValidationErrors) => ValidationErrors = identity
 ): ValidatorFn

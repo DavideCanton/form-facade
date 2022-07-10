@@ -2,17 +2,17 @@ import { AbstractControl, FormArray, FormGroup } from '@angular/forms';
 import { combineLatest, isObservable, Observable, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, startWith } from 'rxjs/operators';
 
+import { forEachObject } from '../classes/utils/object-utils';
+import { CUSTOM_VALIDATOR_SYMBOL, DisabledWhenMultipleFields, FormArrayDefinition, FormDefinition, FormDefinitionExtras, FormGroupDefinition, FormGroupValidatorDefinition, IDisabledWhenField } from './definitions/form-group-facade.interfaces';
 import { Select, SelectManager } from './definitions/select-model';
-import { FormArrayW, FormControlW, ControlW } from './form-control-w';
-import { CUSTOM_VALIDATOR_SYMBOL, IDisabledWhenField, DisabledWhenMultipleFields, FormArrayDefinition, FormDefinition, FormDefinitionExtras, FormErrors, FormGroupDefinition, FormGroupValidatorDefinition } from './definitions/form-group-facade.interfaces';
-import { forEachObject } from 'projects/form-facade/src/lib/classes/utils/object-utils';
+import { ControlW, FormArrayW, FormControlW, FormGroupW } from './form-control-w';
 
 const FORM_GROUP_FACADE_SYMBOL = Symbol('form-group-facade-ref');
 
 
 export class FormFacade<T>
 {
-    private innerGroup: FormGroup;
+    private innerGroup: FormGroupW;
     private selectModels: Partial<Record<keyof T, SelectManager>>;
     private formArrayKeys = new Set<keyof T>();
     private extraComplete: FormDefinitionExtras;
@@ -33,7 +33,7 @@ export class FormFacade<T>
             return { ...vv, [key]: control };
         }, {} as Record<keyof T, AbstractControl>);
 
-        this.innerGroup = new FormGroup(values, this.extraComplete.validator, this.extraComplete.asyncValidator);
+        this.innerGroup = new FormGroupW(values, this.extraComplete.validator, this.extraComplete.asyncValidator);
         this.innerGroup[FORM_GROUP_FACADE_SYMBOL] = this;
 
         this.selectModels = {};
@@ -58,7 +58,7 @@ export class FormFacade<T>
             this.markDependents(this.extraComplete);
     }
 
-    get group(): FormGroup
+    get group(): FormGroupW
     {
         return this.innerGroup;
     }
@@ -68,54 +68,30 @@ export class FormFacade<T>
         return this.group.dirty;
     }
 
+    get pristine(): boolean
+    {
+        return this.group.pristine;
+    }
+
     get valid(): boolean
     {
         return this.group.valid;
+    }
+
+    get invalid(): boolean
+    {
+        return this.group.invalid;
+    }
+
+    get hasWarnings(): boolean
+    {
+        return this.group.hasWarnings || Object.values(this.group.controls).some((c: ControlW) => c.hasWarnings);
     }
 
     get keys(): (keyof T)[]
     {
         return Object.keys(this.formDefinition) as (keyof T)[];
     }
-
-    get hasWarnings(): boolean
-    {
-        return !!this.warnings;
-    }
-
-    get warnings(): FormErrors<T> | null
-    {
-        const warnings = {} as FormErrors<T>;
-
-        forEachObject(this.formDefinition, ((_, k) =>
-        {
-            const ctrl = this.getControl(k);
-            const controlWarnings = this.getWarningsOrErrorsForControl(ctrl, 'warnings');
-            if(controlWarnings)
-                warnings[k] = controlWarnings;
-        }));
-
-        return Object.keys(warnings).length > 0 ? warnings : null;
-    }
-
-    get errors(): FormErrors<T> | null
-    {
-        const errors = {} as FormErrors<T>;
-
-        if(this.group.errors)
-            errors.groupErrors = this.group.errors;
-
-        forEachObject(this.formDefinition, ((_, k) =>
-        {
-            const ctrl = this.getControl(k);
-            const controlErrors = this.getWarningsOrErrorsForControl(ctrl, 'errors');
-            if(controlErrors)
-                errors[k] = controlErrors;
-        }));
-
-        return Object.keys(errors).length > 0 ? errors : null;
-    }
-
 
     static getFormGroupFacade<T>(group: FormGroup): FormFacade<T> | null
     {
@@ -175,6 +151,24 @@ export class FormFacade<T>
     {
         return this.group.get(key as string)! as FormControlW | FormArrayW;
     }
+
+    getArray<K extends keyof T & string>(key: K): FormArrayW
+    {
+        const ctrl = this.getControl(key);
+        if(!(ctrl instanceof FormArrayW))
+            throw new Error(`Control with name ${key} is not a FormArray`);
+        return ctrl;
+    }
+
+
+    getSimpleControl<K extends keyof T & string>(key: K): FormControlW
+    {
+        const ctrl = this.getControl(key);
+        if(!(ctrl instanceof FormControlW))
+            throw new Error(`Control with name ${key} is not a FormControl`);
+        return ctrl;
+    }
+
 
     hasControl(key: string): boolean
     {
@@ -319,7 +313,7 @@ export class FormFacade<T>
                 {
                     const controls = control instanceof FormArray ?
                         control.controls :
-                        Object.entries(control.controls).map(v => v[1]);
+                        Object.values(control.controls);
 
                     controls.forEach((childControl: AbstractControl) =>
                     {
@@ -433,11 +427,7 @@ export class FormFacade<T>
 
     private computeSelectModels(): string[]
     {
-        return Object.keys(this.formDefinition).filter(k =>
-        {
-            const def = this.formDefinition[k];
-            return !!def.select;
-        });
+        return Object.keys(this.formDefinition).filter(k => this.formDefinition[k].select);
     }
 
     private createControl(v: FormDefinition<any> | FormArrayDefinition<any>): AbstractControl
@@ -450,15 +440,13 @@ export class FormFacade<T>
 
     private alignFormArrays(values: Partial<T>): void
     {
-        Object.keys(values).forEach((kk: string) =>
+        forEachObject(values, (value, k) =>
         {
-            const k = kk as keyof T;
-            const value = values[kk];
             if(this.formArrayKeys.has(k))
             {
                 const valueAsArray = value as unknown as any[];
                 const definition = this.formDefinition[k] as Required<FormArrayDefinition<T[typeof k]>> & FormArrayDefinition<any[]>;
-                const formArray = this.getControl(k) as unknown as FormArrayW;
+                const formArray = this.getArray(k);
 
                 valueAsArray.forEach((arrayItem, index) =>
                 {

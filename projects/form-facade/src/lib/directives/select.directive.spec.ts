@@ -1,6 +1,6 @@
 import { ReactiveFormsModule } from '@angular/forms';
 import { createDirectiveFactory, SpectatorDirective } from '@ngneat/spectator';
-import { FormFacade } from 'projects/form-facade/src/public_api';
+import { FormFacade } from '../classes/form-facade';
 import { SelectDirective } from './select.directive';
 
 const template = `

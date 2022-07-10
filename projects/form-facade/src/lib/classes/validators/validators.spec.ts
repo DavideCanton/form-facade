@@ -2,7 +2,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { constant, has } from 'lodash';
 
 import { FormControlW } from '../form-control-w';
-import { composeValidators, getDependents, makeDependentValidator, makeValidatorWarning } from './validators';
+import { composeValidators, getDependents, makeDependentValidator, warning } from './validators';
 
 describe('makeDependentValidator', () =>
 {
@@ -56,7 +56,7 @@ describe('makeValidatorWarning', () =>
 {
   it('should create a warning validator correctly', () =>
   {
-    const warningValidator = makeValidatorWarning(Validators.required);
+    const warningValidator = warning(Validators.required);
     const formControl = new FormControlW('', [warningValidator]);
 
     formControl.updateValueAndValidity();
@@ -73,7 +73,7 @@ describe('makeValidatorWarning', () =>
 
   it('should mix correctly validators and warnings', () =>
   {
-    const warningValidator = makeValidatorWarning(Validators.pattern(/^A.+/));
+    const warningValidator = warning(Validators.pattern(/^A.+/));
     const maxLengthValidator = Validators.minLength(3);
     const formControl = new FormControlW('aa', [
       warningValidator,

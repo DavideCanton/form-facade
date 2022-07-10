@@ -2,7 +2,7 @@ import { FormControl, Validators } from '@angular/forms';
 
 import { ValidationStatus } from './definitions/form-group-facade.interfaces';
 import { FormArrayW, FormControlW, FormGroupW } from './form-control-w';
-import { makeValidatorWarning } from './validators/validators';
+import { warning } from './validators/validators';
 
 describe('FormControlW', () =>
 {
@@ -63,7 +63,7 @@ describe('FormControlW', () =>
   {
     const c = new FormControlW(
       'ciao',
-      makeValidatorWarning(Validators.required)
+      warning(Validators.required)
     );
     expect(c.hasWarnings).toBe(false);
     c.setValue('');
@@ -134,7 +134,7 @@ describe('FormArrayW', () =>
   {
     const c = new FormArrayW(
       [],
-      makeValidatorWarning(control => control.value.length > 0 ? null : { invalid: true })
+      warning(control => control.value.length > 0 ? null : { invalid: true })
     );
 
     expect(c.hasWarnings).toBe(true);
@@ -216,7 +216,7 @@ describe('FormGroupW', () =>
       {
         ctrl: new FormControlW(''),
       },
-      makeValidatorWarning(control => control.value.ctrl.length > 0 ? null : { invalid: true })
+      warning(control => control.value.ctrl.length > 0 ? null : { invalid: true })
     );
 
     expect(c.hasWarnings).toBe(true);

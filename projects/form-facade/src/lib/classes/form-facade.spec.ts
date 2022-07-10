@@ -5,9 +5,9 @@ import { By } from '@angular/platform-browser';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { FormArrayW, FormControlW } from './form-control-w';
+import { ControlW, FormArrayW, FormControlW, FormGroupW } from './form-control-w';
 import { FormFacade } from './form-facade';
-import { composeValidators, makeValidatorWarning } from './validators/validators';
+import { composeValidators, warning } from './validators/validators';
 
 interface FormModel
 {
@@ -45,7 +45,7 @@ describe('FormFacade', () =>
             name: {
                 initialValue: 'aa',
                 validator: composeValidators([
-                    makeValidatorWarning(Validators.pattern(/^A.+/)),
+                    warning(Validators.pattern(/^A.+/)),
                     Validators.minLength(3)
                 ])
             },
@@ -53,27 +53,29 @@ describe('FormFacade', () =>
             age: { initialValue: 0 }
         });
 
+        const name = facade.getControl('name');
+
         expect(facade.hasWarnings).toBe(true);
-        expect(facade.warnings.name.hasOwnProperty('pattern')).toBe(true);
+        expect(name.warnings.hasOwnProperty('pattern')).toBe(true);
 
         expect(facade.valid).toBe(false);
-        expect(facade.errors.name.hasOwnProperty('minlength')).toBe(true);
+        expect(name.errors.hasOwnProperty('minlength')).toBe(true);
 
         facade.patchValues({ name: 'Aaaa' });
 
         expect(facade.hasWarnings).toBe(false);
-        expect(facade.warnings).toEqual(null);
+        expect(name.warnings).toEqual(null);
 
         expect(facade.valid).toBe(true);
-        expect(facade.errors).toBeNull();
+        expect(facade.group.errors).toBeNull();
 
         facade.patchValues({ name: 'Aa' });
 
         expect(facade.hasWarnings).toBe(false);
-        expect(facade.warnings).toEqual(null);
+        expect(name.warnings).toEqual(null);
 
         expect(facade.valid).toBe(false);
-        expect(facade.errors.name.hasOwnProperty('minlength')).toBe(true);
+        expect(name.errors.hasOwnProperty('minlength')).toBe(true);
     });
 
     it('should work with warnings', () =>
@@ -83,16 +85,14 @@ describe('FormFacade', () =>
             surname: { initialValue: '' },
             age: {
                 initialValue: 4,
-                validator: makeValidatorWarning(Validators.min(5), (err) => ({ ...err, test: true }))
+                validator: warning(Validators.min(5), (err) => ({ ...err, test: true }))
             }
         });
 
         expect(facade.hasWarnings).toBe(true);
-        expect(facade.warnings).toEqual({
-            age: {
-                min: { min: 5, actual: 4 },
-                test: true
-            }
+        expect(facade.getControl('age').warnings).toEqual({
+            min: { min: 5, actual: 4 },
+            test: true
         });
     });
 
@@ -114,11 +114,11 @@ describe('FormFacade', () =>
             ns: {
                 initialValue: [],
                 controlBuilder: () => new FormControlW('', composeValidators([
-                    makeValidatorWarning(Validators.pattern(/^A.+/)),
+                    warning(Validators.pattern(/^A.+/)),
                     Validators.minLength(3)
                 ])),
                 validator: composeValidators([
-                    makeValidatorWarning(arrayLengthGt(3)),
+                    warning(arrayLengthGt(3)),
                     arrayLengthGt(0)
                 ])
             },
@@ -128,13 +128,13 @@ describe('FormFacade', () =>
                     n: {
                         initialValue: '',
                         validator: composeValidators([
-                            makeValidatorWarning(Validators.pattern(/^A.+/)),
+                            warning(Validators.pattern(/^A.+/)),
                             Validators.minLength(3)
                         ])
                     }
                 }),
                 validator: composeValidators([
-                    makeValidatorWarning(arrayLengthGt(3)),
+                    warning(arrayLengthGt(3)),
                     arrayLengthGt(0)
                 ])
             }
@@ -143,22 +143,12 @@ describe('FormFacade', () =>
         expect(facade.hasWarnings).toBe(true);
         expect(facade.valid).toBe(false);
 
-        expect(facade.errors).toEqual({
-            ns: {
-                controlErrors: { arrayLengthGt: lengthMsg(0) },
-            },
-            cs: {
-                controlErrors: { arrayLengthGt: lengthMsg(0) },
-            }
-        });
-        expect(facade.warnings).toEqual({
-            ns: {
-                controlWarnings: { arrayLengthGt: lengthMsg(3) },
-            },
-            cs: {
-                controlWarnings: { arrayLengthGt: lengthMsg(3) },
-            }
-        });
+        const ns = facade.getArray('ns');
+        const cs = facade.getArray('cs');
+        expect(ns.errors).toEqual({ arrayLengthGt: lengthMsg(0) });
+        expect(cs.errors).toEqual({ arrayLengthGt: lengthMsg(0) });
+        expect(ns.warnings).toEqual({ arrayLengthGt: lengthMsg(3) });
+        expect(ns.warnings).toEqual({ arrayLengthGt: lengthMsg(3) });
 
         facade.patchValues({
             ns: ['Aaaa', 'Aaaa', 'Aaaa', 'Aaaa'],
@@ -167,8 +157,9 @@ describe('FormFacade', () =>
 
         expect(facade.hasWarnings).toBe(false);
         expect(facade.valid).toBe(true);
-        expect(facade.errors).toBeNull();
-        expect(facade.warnings).toBeNull();
+        expect(facade.group.errors).toBeNull();
+        expect(ns.warnings).toBeNull();
+        expect(cs.warnings).toBeNull();
 
         facade.patchValues({
             ns: ['a'],
@@ -178,24 +169,18 @@ describe('FormFacade', () =>
         expect(facade.hasWarnings).toBe(true);
         expect(facade.valid).toBe(false);
 
-        expect(facade.errors).toEqual({
-            ns: {
-                arrayErrors: { 0: { minlength: minLengthObj(3, 1) } },
-            },
-            cs: {
-                arrayErrors: { 0: { n: { minlength: minLengthObj(3, 1) } } },
-            }
-        });
-        expect(facade.warnings).toEqual({
-            ns: {
-                arrayWarnings: { 0: { pattern: patternObj('/^A.+/', 'a') } },
-                controlWarnings: { arrayLengthGt: lengthMsg(3) },
-            },
-            cs: {
-                arrayWarnings: { 0: { n: { pattern: patternObj('/^A.+/', 'a') } } },
-                controlWarnings: { arrayLengthGt: lengthMsg(3) },
-            }
-        });
+        expect(ns.errors).toBeNull();
+        expect(ns.controls[0].errors).toEqual({ minlength: minLengthObj(3, 1) });
+
+        expect(ns.warnings).toEqual({ arrayLengthGt: lengthMsg(3) });
+        expect(ns.controls[0].errors).toEqual({ minlength: minLengthObj(3, 1) });
+
+        expect(ns.warnings).toEqual({ arrayLengthGt: lengthMsg(3) });
+        expect(ns.controls[0].warnings).toEqual({ pattern: patternObj('/^A.+/', 'a') });
+
+        expect(cs.warnings).toEqual({ arrayLengthGt: lengthMsg(3) });
+        expect((cs.controls[0] as FormGroupW).controls.n.errors).toEqual({ minlength: minLengthObj(3, 1) });
+        expect((cs.controls[0] as FormGroupW).controls.n.warnings).toEqual({ pattern: patternObj('/^A.+/', 'a') });
 
         facade.patchValues({
             ns: ['Aaa', 'Abb'],
@@ -203,14 +188,8 @@ describe('FormFacade', () =>
         });
 
         expect(facade.hasWarnings).toBe(true);
-        expect(facade.warnings).toEqual({
-            ns: {
-                controlWarnings: { arrayLengthGt: lengthMsg(3) },
-            },
-            cs: {
-                controlWarnings: { arrayLengthGt: lengthMsg(3) },
-            }
-        });
+        expect(ns.warnings).toEqual({ arrayLengthGt: lengthMsg(3) });
+        expect(cs.warnings).toEqual({ arrayLengthGt: lengthMsg(3) });
         expect(facade.valid).toBe(true);
 
         facade.patchValues({
@@ -220,20 +199,14 @@ describe('FormFacade', () =>
 
         expect(facade.hasWarnings).toBe(true);
 
-        expect(facade.warnings).toEqual({
-            ns: {
-                arrayWarnings: {
-                    1: { pattern: patternObj('/^A.+/', 'aaa') },
-                },
-                controlWarnings: { arrayLengthGt: lengthMsg(3) },
-            },
-            cs: {
-                arrayWarnings: {
-                    1: { n: { pattern: patternObj('/^A.+/', 'aaa') } },
-                },
-                controlWarnings: { arrayLengthGt: lengthMsg(3) },
-            }
-        });
+        expect(ns.warnings).toEqual({ arrayLengthGt: lengthMsg(3) });
+        expect(cs.warnings).toEqual({ arrayLengthGt: lengthMsg(3) });
+
+        expect(ns.warnings).toEqual({ arrayLengthGt: lengthMsg(3) });
+        expect(ns.controls[1].warnings).toEqual({ pattern: patternObj('/^A.+/', 'aaa') });
+
+        expect(cs.warnings).toEqual({ arrayLengthGt: lengthMsg(3) });
+        expect((cs.controls[1] as FormGroupW).controls.n.warnings).toEqual({ pattern: patternObj('/^A.+/', 'aaa') });
 
         expect(facade.valid).toBe(true);
     });
@@ -541,16 +514,11 @@ describe('FormFacade', () =>
             cs2: [{ x: 3 }, { x: 5 }, { x: 7 }],
         });
         expect(facade.valid).toBe(false);
-        expect(facade.errors).toEqual({
-            ns: { a: missingMsg('a') },
-            ns2: {
-                controlErrors: { a2: missingMsg('a') },
-            },
-            cs: { x: notGreaterThanMsg(5) },
-            cs2: {
-                controlErrors: { x2: notGreaterThanMsg(4) },
-            },
-        });
+
+        expect(facade.getControl('ns').errors).toEqual({ a: missingMsg('a') });
+        expect(facade.getControl('ns2').errors).toEqual({ a2: missingMsg('a') });
+        expect(facade.getControl('cs').errors).toEqual({ x: notGreaterThanMsg(5) });
+        expect(facade.getControl('cs2').errors).toEqual({ x2: notGreaterThanMsg(4) });
 
         facade.patchValues({
             n: 1,
@@ -567,22 +535,12 @@ describe('FormFacade', () =>
             cs2: [{ x: 3 }, { x: 5 }, { x: 10 }],
         });
         expect(facade.valid).toBe(false);
-        expect(facade.errors).toEqual({
-            ns: { a: missingMsg('a') },
-            ns2: {
-                controlErrors: { a2: missingMsg('a') },
-                arrayErrors: {
-                    1: { x3: invalidNumber }
-                },
-            },
-            cs: { x: notGreaterThanMsg(5) },
-            cs2: {
-                controlErrors: { x2: notGreaterThanMsg(4) },
-                arrayErrors: {
-                    2: { x: { x3: invalidNumber } }
-                },
-            },
-        });
+        expect(facade.getControl('ns').errors).toEqual({ a: missingMsg('a') });
+        expect(facade.getControl('ns2').errors).toEqual({ a2: missingMsg('a') });
+        expect(facade.getArray('ns2').controls[1].errors).toEqual({ x3: invalidNumber });
+        expect(facade.getControl('cs').errors).toEqual({ x: notGreaterThanMsg(5) });
+        expect(facade.getControl('cs2').errors).toEqual({ x2: notGreaterThanMsg(4) });
+        expect(facade.getArray('cs2').controls[2].get('x').errors).toEqual({ x3: invalidNumber });
     });
 
     it('should not propagate markAsDirtyRecursive to children', () =>
@@ -646,8 +604,8 @@ interface Person
         <input id="name" formControlName="name"/>
         <input id="surname" formControlName="surname"/>
         <input id="age" type="number" formControlName="age"/>
-        <input class="name-input" *ngFor="let v of otherNames.controls; index as i" [id]="'name-' + i" [formControl]="v"/>
-        <ng-container *ngFor="let v of addresses.controls; index as i" [formGroup]="v">
+        <input class="name-input" *ngFor="let v of facade.getArray('otherNames').controls; index as i" [id]="'name-' + i" [formControl]="v"/>
+        <ng-container *ngFor="let v of facade.getArray('addresses').controls; index as i" [formGroup]="v">
             <div class="address-block">
         <input [id]="'street-' + i" formControlName="street"/>
         <input [id]="'street-number-' + i" formControlName="streetNumber"/>
@@ -660,16 +618,6 @@ interface Person
 class TestComponent implements OnInit
 {
     facade: FormFacade<Person>;
-
-    get otherNames(): FormArrayW
-    {
-        return this.facade.getControl('otherNames') as FormArrayW;
-    }
-
-    get addresses(): FormArrayW
-    {
-        return this.facade.getControl('addresses') as FormArrayW;
-    }
 
     ngOnInit()
     {
