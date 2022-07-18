@@ -107,7 +107,8 @@ describe('SelectManager', () =>
 
         expect(() =>
         {
-            console.log(manager.selectedId);
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+            manager.selectedId;
         }).toThrow(new Error('Cannot get selectedId with a multiple select'));
 
         manager.selectedIds = ['id1', 'id2'];
