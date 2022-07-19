@@ -1,9 +1,7 @@
 import { SelectManager } from './select-model';
 
-describe('SelectManager', () =>
-{
-    it('should work with multiple = false', () =>
-    {
+describe('SelectManager', () => {
+    it('should work with multiple = false', () => {
         const manager = new SelectManager(false);
 
         expect(manager.values).toEqual([]);
@@ -33,8 +31,7 @@ describe('SelectManager', () =>
         expect(manager.selectedValue).toBeNull();
         expect(manager.hasSelectedItem).toBeFalse();
 
-        expect(() =>
-        {
+        expect(() => {
             manager.selectedId = 'id3';
         }).toThrow(new Error('Some elements are not in the select list: id3'));
 
@@ -46,8 +43,7 @@ describe('SelectManager', () =>
         expect(manager.selectedValues).toEqual([manager.values[1]]);
         expect(manager.hasSelectedItem).toBeTrue();
 
-        expect(() =>
-        {
+        expect(() => {
             manager.selectedIds = ['id1', 'id2'];
         }).toThrow(new Error('Cannot set multiple selected ids in a non multiple select'));
 
@@ -71,8 +67,7 @@ describe('SelectManager', () =>
         expect(manager.selectedValue).toBeNull();
     });
 
-    it('should work with multiple = true', () =>
-    {
+    it('should work with multiple = true', () => {
         const manager = new SelectManager(true);
 
         expect(manager.values).toEqual([]);
@@ -100,13 +95,11 @@ describe('SelectManager', () =>
         expect(manager.selectedValues).toEqual([]);
         expect(manager.hasSelectedItem).toBeFalse();
 
-        expect(() =>
-        {
+        expect(() => {
             manager.selectedId = 'id3';
         }).toThrow(new Error('Cannot set selectedId with a multiple select'));
 
-        expect(() =>
-        {
+        expect(() => {
             // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             manager.selectedId;
         }).toThrow(new Error('Cannot get selectedId with a multiple select'));
@@ -117,8 +110,7 @@ describe('SelectManager', () =>
         expect(manager.selectedValues).toEqual(manager.values);
         expect(manager.hasSelectedItem).toBeTrue();
 
-        expect(() =>
-        {
+        expect(() => {
             manager.selectedIds = ['id1', 'id3'];
         }).toThrow(new Error('Some elements are not in the select list: id3'));
 

@@ -5,25 +5,17 @@ import { FormControlW } from '../form-control-w';
 import { FormFacade } from '../form-facade';
 import { composeValidators, getDependents, makeDependentValidator, warning } from './validators';
 
-describe('makeDependentValidator', () =>
-{
-    it('should mark validator as dependent correctly', () =>
-    {
-        const validator = makeDependentValidator<{ value: string }>()(
-            'value',
-            constant(null),
-        );
+describe('makeDependentValidator', () => {
+    it('should mark validator as dependent correctly', () => {
+        const validator = makeDependentValidator<{ value: string }>()('value', constant(null));
 
         expect(getDependents(validator)).toEqual(['value']);
     });
 });
 
-describe('composeValidators', () =>
-{
-    it('should compose validators and keep dependents correctly', () =>
-    {
-        interface Data
-        {
+describe('composeValidators', () => {
+    it('should compose validators and keep dependents correctly', () => {
+        interface Data {
             value: string;
             value2: string;
             value3: string;
@@ -33,17 +25,14 @@ describe('composeValidators', () =>
             value: { initialValue: '' },
             value2: { initialValue: '' },
             value3: {
-                initialValue: '', validator: composeValidators([
-                    makeDependentValidator<Data>()(
-                        'value',
-                        Validators.required,
+                initialValue: '',
+                validator: composeValidators([
+                    makeDependentValidator<Data>()('value', Validators.required),
+                    makeDependentValidator<Data>()('value2', ({ value }) =>
+                        value.length <= 1 ? { tooShort: true } : null
                     ),
-                    makeDependentValidator<Data>()(
-                        'value2',
-                        ({ value }) => value.length <= 1 ? { tooShort: true } : null,
-                    )
-                ])
-            }
+                ]),
+            },
         });
 
         const ctrl = facade.getControl('value3');
@@ -61,10 +50,8 @@ describe('composeValidators', () =>
     });
 });
 
-describe('makeValidatorWarning', () =>
-{
-    it('should create a warning validator correctly', () =>
-    {
+describe('makeValidatorWarning', () => {
+    it('should create a warning validator correctly', () => {
         const warningValidator = warning(Validators.required);
         const formControl = new FormControlW('', [warningValidator]);
 
@@ -80,14 +67,10 @@ describe('makeValidatorWarning', () =>
         expect(formControl.warnings).toEqual(null);
     });
 
-    it('should mix correctly validators and warnings', () =>
-    {
+    it('should mix correctly validators and warnings', () => {
         const warningValidator = warning(Validators.pattern(/^A.+/));
         const maxLengthValidator = Validators.minLength(3);
-        const formControl = new FormControlW('aa', [
-            warningValidator,
-            maxLengthValidator
-        ]);
+        const formControl = new FormControlW('aa', [warningValidator, maxLengthValidator]);
 
         expect(formControl.hasWarnings).toBe(true);
         expect(has(formControl.warnings, 'pattern')).toBe(true);

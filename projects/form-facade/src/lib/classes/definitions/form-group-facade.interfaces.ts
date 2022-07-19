@@ -13,12 +13,11 @@ export const CUSTOM_VALIDATOR_SYMBOL = Symbol('custom_validator');
 /**
  * Enum corresponding to {@link FormControlStatus}
  */
-export enum ValidationStatus
-{
+export enum ValidationStatus {
     VALID = 'VALID',
     INVALID = 'INVALID',
     PENDING = 'PENDING',
-    DISABLED = 'DISABLED'
+    DISABLED = 'DISABLED',
 }
 
 /**
@@ -33,7 +32,7 @@ export type IDisabledWhenField<T> = {
         name: K & string;
         /** the operator to apply to convert the current value to a boolean (`true` if disabled) */
         operator: OperatorFunction<T[K], boolean>;
-    }
+    };
 }[keyof T];
 
 /**
@@ -41,8 +40,7 @@ export type IDisabledWhenField<T> = {
  * It executes all the conditions using {@link combineLatest}, then joins the outcomes
  * using the provided {@link joiner}, or {@link Array.prototype.some} if no {@link joiner} is provided.
  */
-export interface DisabledWhenMultipleFields<T>
-{
+export interface DisabledWhenMultipleFields<T> {
     /** the array of conditions, depending on multiple fields */
     conditions: IDisabledWhenField<T>[];
     /**
@@ -52,8 +50,7 @@ export interface DisabledWhenMultipleFields<T>
     joiner?: (b: boolean[]) => boolean;
 }
 
-export interface FormDefinition<T, K extends keyof T>
-{
+export interface FormDefinition<T, K extends keyof T> {
     initialValue: T[K];
     validator?: ValidatorFn;
     asyncValidator?: AsyncValidatorFn;
@@ -61,12 +58,10 @@ export interface FormDefinition<T, K extends keyof T>
     disabledWhen?: Observable<boolean> | IDisabledWhenField<T> | DisabledWhenMultipleFields<T>;
 }
 
-export interface FormArrayDefinition<T, K extends keyof T> extends FormDefinition<T, K>
-{
+export interface FormArrayDefinition<T, K extends keyof T> extends FormDefinition<T, K> {
     // eslint-disable-next-line no-use-before-define
     controlBuilder?: () => FormGroupDefinition<ElementOf<T[K]>> | AbstractControl;
 }
-
 
 /**
  * Definition of a form group.
@@ -83,8 +78,7 @@ export type FormGroupValidatorDefinition<T> = {
     [K in keyof T]?: Pick<FormDefinition<T, K>, 'validator' | 'asyncValidator'>;
 };
 
-export interface FormDefinitionExtras
-{
+export interface FormDefinitionExtras {
     validator: ValidatorFn | null;
     asyncValidator: AsyncValidatorFn | null;
     autoMarkAsDependents: boolean;

@@ -1,22 +1,21 @@
 name: Build and run tests
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
 
-  workflow_dispatch:
+    workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+    build:
+        runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2.4.1
-        with:
-          cache: 'npm'
-      - run: npm install
-      - run: npm run test-ci:lib
-
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v2.4.1
+              with:
+                  cache: 'npm'
+            - run: npm install
+            - run: npm run test-ci:lib

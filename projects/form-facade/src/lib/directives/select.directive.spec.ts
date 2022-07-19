@@ -15,61 +15,55 @@ const template = `
   </form>
 `;
 
-interface F
-{
-  value: string;
+interface F {
+    value: string;
 }
 
-describe('SelectModelManagerDirective', () =>
-{
-  let spectator: SpectatorDirective<SelectDirective<F>>;
-  let facade: FormFacade<F>;
-  const factory = createDirectiveFactory<SelectDirective<F>>({
-    directive: SelectDirective,
-    imports: [ReactiveFormsModule],
-  });
-
-  beforeEach(() =>
-  {
-    facade = new FormFacade<F>({
-      value: {
-        initialValue: null,
-        select: [
-          { id: '1', name: 'one' },
-          { id: '2', name: 'two' },
-        ]
-      }
+describe('SelectModelManagerDirective', () => {
+    let spectator: SpectatorDirective<SelectDirective<F>>;
+    let facade: FormFacade<F>;
+    const factory = createDirectiveFactory<SelectDirective<F>>({
+        directive: SelectDirective,
+        imports: [ReactiveFormsModule],
     });
 
-    spectator = factory(template, { hostProps: { facade } });
-  });
+    beforeEach(() => {
+        facade = new FormFacade<F>({
+            value: {
+                initialValue: null,
+                select: [
+                    { id: '1', name: 'one' },
+                    { id: '2', name: 'two' },
+                ],
+            },
+        });
 
-  it('should bind correctly options', () =>
-  {
-    const options = spectator.queryAll('option');
-    expect(options.length).toBe(2);
-    expect(options[0].textContent.trim()).toBe('one');
-    expect(options[1].textContent.trim()).toBe('two');
-  });
+        spectator = factory(template, { hostProps: { facade } });
+    });
 
-  it('should bind correctly value when selected from code', () =>
-  {
-    const select = spectator.query('select') as HTMLSelectElement;
-    expect(facade.getValue('value')).toBe(null);
-    expect(select.value).toBe('');
-    facade.patchValues({ value: '1' });
-    expect(facade.getValue('value')).toBe('1');
-    expect(select.value).toBe('1');
-  });
+    it('should bind correctly options', () => {
+        const options = spectator.queryAll('option');
+        expect(options.length).toBe(2);
+        expect(options[0].textContent.trim()).toBe('one');
+        expect(options[1].textContent.trim()).toBe('two');
+    });
 
-  it('should bind correctly value when selected from ui', () =>
-  {
-    const select = spectator.query('select') as HTMLSelectElement;
-    expect(facade.getValue('value')).toBe(null);
-    expect(select.value).toBe('');
-    select.value = '1';
-    spectator.triggerEventHandler('select', 'change', { target: select });
-    expect(facade.getValue('value')).toBe('1');
-    expect(select.value).toBe('1');
-  });
+    it('should bind correctly value when selected from code', () => {
+        const select = spectator.query('select') as HTMLSelectElement;
+        expect(facade.getValue('value')).toBe(null);
+        expect(select.value).toBe('');
+        facade.patchValues({ value: '1' });
+        expect(facade.getValue('value')).toBe('1');
+        expect(select.value).toBe('1');
+    });
+
+    it('should bind correctly value when selected from ui', () => {
+        const select = spectator.query('select') as HTMLSelectElement;
+        expect(facade.getValue('value')).toBe(null);
+        expect(select.value).toBe('');
+        select.value = '1';
+        spectator.triggerEventHandler('select', 'change', { target: select });
+        expect(facade.getValue('value')).toBe('1');
+        expect(select.value).toBe('1');
+    });
 });

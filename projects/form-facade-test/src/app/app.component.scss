@@ -1,11 +1,11 @@
 .wrapper {
-  display: grid;
-  grid-template-columns: 2fr 2fr;
-  width: 30%;
-  text-align: left;
+    display: grid;
+    grid-template-columns: 2fr 2fr;
+    width: 30%;
+    text-align: left;
 
-  input.ng-invalid,
-  select.ng-invalid {
-    border: 1px solid red;
-  }
+    input.ng-invalid,
+    select.ng-invalid {
+        border: 1px solid red;
+    }
 }

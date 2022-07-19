@@ -3,8 +3,7 @@ import { Validators } from '@angular/forms';
 import { composeValidators, FormFacade, makeDependentValidator } from '@mdcc/form-facade';
 import { filter } from 'rxjs/operators';
 
-interface Form
-{
+interface Form {
     name: string;
     age: number | null;
     selectSex: boolean;
@@ -17,32 +16,29 @@ const v21 = Validators.min(21);
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
-    styleUrls: ['./app.component.scss']
+    styleUrls: ['./app.component.scss'],
 })
-export class AppComponent implements OnInit
-{
+export class AppComponent implements OnInit {
     facade: FormFacade<Form>;
 
-    ngOnInit()
-    {
+    ngOnInit() {
         this.facade = new FormFacade<Form>({
             name: {
                 initialValue: '',
-                validator: Validators.required
+                validator: Validators.required,
             },
             age: {
                 initialValue: null,
                 validator: composeValidators([
                     Validators.required,
                     Validators.min(1),
-                    makeDependentValidator<Form>()(
-                        'sex',
-                        (ctrl, { sex }) => (sex === 'F' ? v18 : v21)(ctrl)
-                    )
-                ])
+                    makeDependentValidator<Form>()('sex', (ctrl, { sex }) =>
+                        (sex === 'F' ? v18 : v21)(ctrl)
+                    ),
+                ]),
             },
             selectSex: {
-                initialValue: false
+                initialValue: false,
             },
             sex: {
                 initialValue: null,
@@ -50,17 +46,19 @@ export class AppComponent implements OnInit
                     { id: 'M', name: 'M' },
                     { id: 'F', name: 'F' },
                 ],
-                validator: makeDependentValidator<Form>()(
-                    'selectSex',
-                    (ctrl, { selectSex }) => selectSex ? Validators.required(ctrl) : null
-                )
-            }
+                validator: makeDependentValidator<Form>()('selectSex', (ctrl, { selectSex }) =>
+                    selectSex ? Validators.required(ctrl) : null
+                ),
+            },
         });
 
-        this.facade.getControl('selectSex').valueChanges.pipe(
-            filter(v => !v)
-        ).subscribe(() => this.facade.patchValues({
-            sex: null
-        }));
+        this.facade
+            .getControl('selectSex')
+            .valueChanges.pipe(filter(v => !v))
+            .subscribe(() =>
+                this.facade.patchValues({
+                    sex: null,
+                })
+            );
     }
 }

@@ -9,22 +9,19 @@ import { ControlW, FormArrayW, FormControlW, FormGroupW } from './form-control-w
 import { FormFacade } from './form-facade';
 import { composeValidators, warning } from './validators/validators';
 
-interface FormModel
-{
+interface FormModel {
     name: string;
     surname: string;
     age: number;
 }
 
 // tslint:disable-next-line: no-big-function
-describe('FormFacade', () =>
-{
-    it('should associate correctly facade and built FormGroup', () =>
-    {
+describe('FormFacade', () => {
+    it('should associate correctly facade and built FormGroup', () => {
         const facade = new FormFacade<FormModel>({
             name: { initialValue: '' },
             surname: { initialValue: '' },
-            age: { initialValue: 0 }
+            age: { initialValue: 0 },
         });
 
         const group = facade.group;
@@ -32,25 +29,23 @@ describe('FormFacade', () =>
         expect(FormFacade.getFormGroupFacade<FormModel>(group)).toBe(facade);
     });
 
-    it('should return null if group is not build from a facade', () =>
-    {
+    it('should return null if group is not build from a facade', () => {
         const group = new FormGroup({});
 
         expect(FormFacade.getFormGroupFacade<FormModel>(group)).toBeNull();
     });
 
-    it('should work with warnings and validators mixed', () =>
-    {
+    it('should work with warnings and validators mixed', () => {
         const facade = new FormFacade<FormModel>({
             name: {
                 initialValue: 'aa',
                 validator: composeValidators([
                     warning(Validators.pattern(/^A.+/)),
-                    Validators.minLength(3)
-                ])
+                    Validators.minLength(3),
+                ]),
             },
             surname: { initialValue: '' },
-            age: { initialValue: 0 }
+            age: { initialValue: 0 },
         });
 
         const name = facade.getControl('name');
@@ -78,49 +73,47 @@ describe('FormFacade', () =>
         expect(name.errors.hasOwnProperty('minlength')).toBe(true);
     });
 
-    it('should work with warnings', () =>
-    {
+    it('should work with warnings', () => {
         const facade = new FormFacade<FormModel>({
-            name: { initialValue: 'aa', },
+            name: { initialValue: 'aa' },
             surname: { initialValue: '' },
             age: {
                 initialValue: 4,
-                validator: warning(Validators.min(5), (err) => ({ ...err, test: true }))
-            }
+                validator: warning(Validators.min(5), err => ({ ...err, test: true })),
+            },
         });
 
         expect(facade.hasWarnings).toBe(true);
         expect(facade.getControl('age').warnings).toEqual({
             min: { min: 5, actual: 4 },
-            test: true
+            test: true,
         });
     });
 
-    it('should work with warnings and validators mixed in array', () =>
-    {
-        interface Data
-        {
+    it('should work with warnings and validators mixed in array', () => {
+        interface Data {
             ns: string[];
             cs: { n: string }[];
         }
 
-
         const lengthMsg = (n: number) => 'length not > of ' + n;
         const patternObj = (requiredPattern, actualValue) => ({ requiredPattern, actualValue });
         const minLengthObj = (requiredLength, actualLength) => ({ requiredLength, actualLength });
-        const arrayLengthGt = (n: number) => (ctrl: FormArray) => ctrl.value.length > n ? null : { arrayLengthGt: lengthMsg(n) };
+        const arrayLengthGt = (n: number) => (ctrl: FormArray) =>
+            ctrl.value.length > n ? null : { arrayLengthGt: lengthMsg(n) };
 
         const facade = new FormFacade<Data>({
             ns: {
                 initialValue: [],
-                controlBuilder: () => new FormControlW('', composeValidators([
-                    warning(Validators.pattern(/^A.+/)),
-                    Validators.minLength(3)
-                ])),
-                validator: composeValidators([
-                    warning(arrayLengthGt(3)),
-                    arrayLengthGt(0)
-                ])
+                controlBuilder: () =>
+                    new FormControlW(
+                        '',
+                        composeValidators([
+                            warning(Validators.pattern(/^A.+/)),
+                            Validators.minLength(3),
+                        ])
+                    ),
+                validator: composeValidators([warning(arrayLengthGt(3)), arrayLengthGt(0)]),
             },
             cs: {
                 initialValue: [],
@@ -129,15 +122,12 @@ describe('FormFacade', () =>
                         initialValue: '',
                         validator: composeValidators([
                             warning(Validators.pattern(/^A.+/)),
-                            Validators.minLength(3)
-                        ])
-                    }
+                            Validators.minLength(3),
+                        ]),
+                    },
                 }),
-                validator: composeValidators([
-                    warning(arrayLengthGt(3)),
-                    arrayLengthGt(0)
-                ])
-            }
+                validator: composeValidators([warning(arrayLengthGt(3)), arrayLengthGt(0)]),
+            },
         });
 
         expect(facade.hasWarnings).toBe(true);
@@ -152,7 +142,7 @@ describe('FormFacade', () =>
 
         facade.patchValues({
             ns: ['Aaaa', 'Aaaa', 'Aaaa', 'Aaaa'],
-            cs: [{ n: 'Aaaa' }, { n: 'Aaaa' }, { n: 'Aaaa' }, { n: 'Aaaa' }]
+            cs: [{ n: 'Aaaa' }, { n: 'Aaaa' }, { n: 'Aaaa' }, { n: 'Aaaa' }],
         });
 
         expect(facade.hasWarnings).toBe(false);
@@ -163,7 +153,7 @@ describe('FormFacade', () =>
 
         facade.patchValues({
             ns: ['a'],
-            cs: [{ n: 'a' }]
+            cs: [{ n: 'a' }],
         });
 
         expect(facade.hasWarnings).toBe(true);
@@ -179,12 +169,16 @@ describe('FormFacade', () =>
         expect(ns.controls[0].warnings).toEqual({ pattern: patternObj('/^A.+/', 'a') });
 
         expect(cs.warnings).toEqual({ arrayLengthGt: lengthMsg(3) });
-        expect((cs.controls[0] as FormGroupW).controls.n.errors).toEqual({ minlength: minLengthObj(3, 1) });
-        expect((cs.controls[0] as FormGroupW).controls.n.warnings).toEqual({ pattern: patternObj('/^A.+/', 'a') });
+        expect((cs.controls[0] as FormGroupW).controls.n.errors).toEqual({
+            minlength: minLengthObj(3, 1),
+        });
+        expect((cs.controls[0] as FormGroupW).controls.n.warnings).toEqual({
+            pattern: patternObj('/^A.+/', 'a'),
+        });
 
         facade.patchValues({
             ns: ['Aaa', 'Abb'],
-            cs: [{ n: 'Aaa' }, { n: 'Aaa' }]
+            cs: [{ n: 'Aaa' }, { n: 'Aaa' }],
         });
 
         expect(facade.hasWarnings).toBe(true);
@@ -194,7 +188,7 @@ describe('FormFacade', () =>
 
         facade.patchValues({
             ns: ['Aaa', 'aaa', 'Aaaa'],
-            cs: [{ n: 'Aaa' }, { n: 'aaa' }]
+            cs: [{ n: 'Aaa' }, { n: 'aaa' }],
         });
 
         expect(facade.hasWarnings).toBe(true);
@@ -206,23 +200,24 @@ describe('FormFacade', () =>
         expect(ns.controls[1].warnings).toEqual({ pattern: patternObj('/^A.+/', 'aaa') });
 
         expect(cs.warnings).toEqual({ arrayLengthGt: lengthMsg(3) });
-        expect((cs.controls[1] as FormGroupW).controls.n.warnings).toEqual({ pattern: patternObj('/^A.+/', 'aaa') });
+        expect((cs.controls[1] as FormGroupW).controls.n.warnings).toEqual({
+            pattern: patternObj('/^A.+/', 'aaa'),
+        });
 
         expect(facade.valid).toBe(true);
     });
 
-    it('should disable fields correctly with name+operator', () =>
-    {
+    it('should disable fields correctly with name+operator', () => {
         const facade = new FormFacade<FormModel>({
             name: {
                 initialValue: '',
                 disabledWhen: {
                     name: 'age',
-                    operator: map(age => age > 10)
-                }
+                    operator: map(age => age > 10),
+                },
             },
             surname: { initialValue: '' },
-            age: { initialValue: 0 }
+            age: { initialValue: 0 },
         });
 
         expect(facade.getControl('name').disabled).toBe(false);
@@ -232,8 +227,7 @@ describe('FormFacade', () =>
         expect(facade.getControl('name').disabled).toBe(true);
     });
 
-    it('should disable fields correctly from multiple conditions with default joiner', () =>
-    {
+    it('should disable fields correctly from multiple conditions with default joiner', () => {
         const facade = new FormFacade<FormModel>({
             name: {
                 initialValue: '',
@@ -241,17 +235,17 @@ describe('FormFacade', () =>
                     conditions: [
                         {
                             name: 'age',
-                            operator: map(age => age > 10)
+                            operator: map(age => age > 10),
                         },
                         {
                             name: 'surname',
-                            operator: map(surname => surname.length > 0)
-                        }
-                    ]
-                }
+                            operator: map(surname => surname.length > 0),
+                        },
+                    ],
+                },
             },
             surname: { initialValue: '' },
-            age: { initialValue: 0 }
+            age: { initialValue: 0 },
         });
 
         expect(facade.getControl('name').disabled).toBe(false);
@@ -266,8 +260,7 @@ describe('FormFacade', () =>
         expect(facade.getControl('name').disabled).toBe(false);
     });
 
-    it('should disable fields correctly from multiple conditions with custom joiner', () =>
-    {
+    it('should disable fields correctly from multiple conditions with custom joiner', () => {
         const facade = new FormFacade<FormModel>({
             name: {
                 initialValue: '',
@@ -275,18 +268,18 @@ describe('FormFacade', () =>
                     conditions: [
                         {
                             name: 'age',
-                            operator: map(age => age > 10)
+                            operator: map(age => age > 10),
                         },
                         {
                             name: 'surname',
-                            operator: map(surname => surname.length > 0)
-                        }
+                            operator: map(surname => surname.length > 0),
+                        },
                     ],
-                    joiner: v => v.every(x => x)
-                }
+                    joiner: v => v.every(x => x),
+                },
             },
             surname: { initialValue: '' },
-            age: { initialValue: 0 }
+            age: { initialValue: 0 },
         });
 
         expect(facade.getControl('name').disabled).toBe(false);
@@ -299,34 +292,31 @@ describe('FormFacade', () =>
 
         facade.patchValues({ age: 9 });
         expect(facade.getControl('name').disabled).toBe(false);
-
     });
 
-    it('should reset initial values', () =>
-    {
+    it('should reset initial values', () => {
         const facade = new FormFacade<FormModel>({
             name: { initialValue: 'Mucca' },
             surname: { initialValue: 'Carolina' },
-            age: { initialValue: 10 }
+            age: { initialValue: 10 },
         });
         facade.patchValues({ name: 'Toro', surname: 'Nero', age: 5 });
         facade.resetInitialValue();
         expect(facade.getValues()).toEqual({
             name: 'Mucca',
             surname: 'Carolina',
-            age: 10
+            age: 10,
         });
     });
 
-    it('should init fields correctly disabled with name+operator', () =>
-    {
+    it('should init fields correctly disabled with name+operator', () => {
         const facade = new FormFacade<FormModel>({
             name: {
                 initialValue: '',
                 disabledWhen: {
                     name: 'age',
-                    operator: map(age => age > 10)
-                }
+                    operator: map(age => age > 10),
+                },
             },
             surname: { initialValue: '' },
             age: { initialValue: 12 },
@@ -340,8 +330,8 @@ describe('FormFacade', () =>
                 initialValue: '',
                 disabledWhen: {
                     name: 'age',
-                    operator: map(age => age > 10)
-                }
+                    operator: map(age => age > 10),
+                },
             },
             surname: { initialValue: '' },
         });
@@ -349,16 +339,15 @@ describe('FormFacade', () =>
         expect(facadeWithDifferentOrder.getControl('name').disabled).toBe(true);
     });
 
-    it('should disable fields correctly with observable', () =>
-    {
+    it('should disable fields correctly with observable', () => {
         const subject = new BehaviorSubject<boolean>(false);
         const facade = new FormFacade<FormModel>({
             name: {
                 initialValue: '',
-                disabledWhen: subject
+                disabledWhen: subject,
             },
             surname: { initialValue: '' },
-            age: { initialValue: 0 }
+            age: { initialValue: 0 },
         });
 
         expect(facade.getControl('name').disabled).toBe(false);
@@ -372,24 +361,23 @@ describe('FormFacade', () =>
         expect(facade.getControl('name').disabled).toBe(false);
     });
 
-    it('should return disabled fields with getValues(true)', () =>
-    {
+    it('should return disabled fields with getValues(true)', () => {
         const facade = new FormFacade<FormModel>({
             name: {
                 initialValue: 'name',
                 disabledWhen: {
                     name: 'age',
-                    operator: map(age => age > 10)
-                }
+                    operator: map(age => age > 10),
+                },
             },
             surname: { initialValue: 'surname' },
-            age: { initialValue: 12 }
+            age: { initialValue: 12 },
         });
 
         expect(facade.getValues(true)).toEqual({
             name: 'name',
             surname: 'surname',
-            age: 12
+            age: 12,
         });
 
         facade.patchValues({ age: 9 });
@@ -397,27 +385,26 @@ describe('FormFacade', () =>
         expect(facade.getValues(true)).toEqual({
             name: 'name',
             surname: 'surname',
-            age: 9
+            age: 9,
         });
     });
 
-    it('should not return disabled fields with getValues(false)', () =>
-    {
+    it('should not return disabled fields with getValues(false)', () => {
         const facade = new FormFacade<FormModel>({
             name: {
                 initialValue: 'name',
                 disabledWhen: {
                     name: 'age',
-                    operator: map(age => age > 10)
-                }
+                    operator: map(age => age > 10),
+                },
             },
             surname: { initialValue: 'surname' },
-            age: { initialValue: 12 }
+            age: { initialValue: 12 },
         });
 
         expect(facade.getValues()).toEqual({
             surname: 'surname',
-            age: 12
+            age: 12,
         });
 
         facade.patchValues({ age: 9 });
@@ -425,19 +412,16 @@ describe('FormFacade', () =>
         expect(facade.getValues()).toEqual({
             name: 'name',
             surname: 'surname',
-            age: 9
+            age: 9,
         });
     });
 
-    it('should work with form arrays', () =>
-    {
-        interface SubEntity
-        {
+    it('should work with form arrays', () => {
+        interface SubEntity {
             x: number;
         }
 
-        interface Entity
-        {
+        interface Entity {
             n: number;
             ns: string[];
             ns2: string[];
@@ -456,18 +440,20 @@ describe('FormFacade', () =>
             ns: {
                 initialValue: [],
                 disabledWhen: disable,
-                validator: s => s.value.includes('a') ? null : { a: missingMsg('a') }
+                validator: s => (s.value.includes('a') ? null : { a: missingMsg('a') }),
             },
             ns2: {
                 initialValue: [],
                 disabledWhen: disable,
-                controlBuilder: () => new FormControl('', c => c.value !== '10' ? null : { x3: invalidNumber }),
-                validator: s => s.value.includes('a') ? null : { a2: missingMsg('a') }
+                controlBuilder: () =>
+                    new FormControl('', c => (c.value !== '10' ? null : { x3: invalidNumber })),
+                validator: s => (s.value.includes('a') ? null : { a2: missingMsg('a') }),
             },
             cs: {
                 initialValue: [],
                 disabledWhen: disable,
-                validator: s => s.value.every((x: SubEntity) => x.x > 5) ? null : { x: notGreaterThanMsg(5) }
+                validator: s =>
+                    s.value.every((x: SubEntity) => x.x > 5) ? null : { x: notGreaterThanMsg(5) },
             },
             cs2: {
                 initialValue: [],
@@ -475,10 +461,11 @@ describe('FormFacade', () =>
                 controlBuilder: () => ({
                     x: {
                         initialValue: 0,
-                        validator: c => c.value !== 10 ? null : { x3: invalidNumber }
+                        validator: c => (c.value !== 10 ? null : { x3: invalidNumber }),
                     },
                 }),
-                validator: c => c.value.every((x: SubEntity) => x.x > 4) ? null : { x2: notGreaterThanMsg(4) }
+                validator: c =>
+                    c.value.every((x: SubEntity) => x.x > 4) ? null : { x2: notGreaterThanMsg(4) },
             },
         });
 
@@ -543,15 +530,12 @@ describe('FormFacade', () =>
         expect(facade.getArray('cs2').controls[2].get('x').errors).toEqual({ x3: invalidNumber });
     });
 
-    it('should not propagate markAsDirtyRecursive to children', () =>
-    {
-        interface SubEntity
-        {
+    it('should not propagate markAsDirtyRecursive to children', () => {
+        interface SubEntity {
             x: number;
         }
 
-        interface Entity
-        {
+        interface Entity {
             cs2: SubEntity[];
         }
 
@@ -582,14 +566,12 @@ describe('FormFacade', () =>
     });
 });
 
-interface Address
-{
+interface Address {
     street: string;
     streetNumber: string;
 }
 
-interface Person
-{
+interface Person {
     name: string;
     surname: string;
     age: number;
@@ -600,72 +582,69 @@ interface Person
 @Component({
     selector: 'ff-example',
     template: `
-    <form [formGroup]="facade.group">
-        <input id="name" formControlName="name"/>
-        <input id="surname" formControlName="surname"/>
-        <input id="age" type="number" formControlName="age"/>
-        <input class="name-input" *ngFor="let v of facade.getArray('otherNames').controls; index as i" [id]="'name-' + i" [formControl]="v"/>
-        <ng-container *ngFor="let v of facade.getArray('addresses').controls; index as i" [formGroup]="v">
-            <div class="address-block">
-        <input [id]="'street-' + i" formControlName="street"/>
-        <input [id]="'street-number-' + i" formControlName="streetNumber"/>
-</div>
-        </ng-container>
-
-    </form>
-    `
+        <form [formGroup]="facade.group">
+            <input id="name" formControlName="name" />
+            <input id="surname" formControlName="surname" />
+            <input id="age" type="number" formControlName="age" />
+            <input
+                class="name-input"
+                *ngFor="let v of facade.getArray('otherNames').controls; index as i"
+                [id]="'name-' + i"
+                [formControl]="v"
+            />
+            <ng-container
+                *ngFor="let v of facade.getArray('addresses').controls; index as i"
+                [formGroup]="v"
+            >
+                <div class="address-block">
+                    <input [id]="'street-' + i" formControlName="street" />
+                    <input [id]="'street-number-' + i" formControlName="streetNumber" />
+                </div>
+            </ng-container>
+        </form>
+    `,
 })
-class TestComponent implements OnInit
-{
+class TestComponent implements OnInit {
     facade: FormFacade<Person>;
 
-    ngOnInit()
-    {
+    ngOnInit() {
         this.facade = new FormFacade({
             name: { initialValue: 'example name' },
             surname: { initialValue: 'example surname' },
             age: { initialValue: 18 },
             otherNames: {
                 initialValue: ['name1', 'name2'],
-                controlBuilder: () => new FormControl('')
+                controlBuilder: () => new FormControl(''),
             },
             addresses: {
                 initialValue: [{ street: 'street1', streetNumber: '1' }],
                 controlBuilder: () => ({
                     street: { initialValue: 'new street' },
                     streetNumber: { initialValue: 'new street number' },
-                })
-            }
+                }),
+            },
         });
     }
 }
 
-describe('FormFacade in a component', () =>
-{
+describe('FormFacade in a component', () => {
     let fixture: ComponentFixture<TestComponent>;
     let component: TestComponent;
 
-    beforeEach(waitForAsync(() =>
-    {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
-            declarations: [
-                TestComponent
-            ],
-            imports: [
-                ReactiveFormsModule
-            ]
+            declarations: [TestComponent],
+            imports: [ReactiveFormsModule],
         }).compileComponents();
     }));
 
-    beforeEach(() =>
-    {
+    beforeEach(() => {
         fixture = TestBed.createComponent(TestComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });
 
-    it('should create the form and fill the values', () =>
-    {
+    it('should create the form and fill the values', () => {
         expect(getControl('#name').value).toBe('example name');
         expect(getControl('#surname').value).toBe('example surname');
         expect(getControl('#age').value).toBe('18');
@@ -675,17 +654,13 @@ describe('FormFacade in a component', () =>
         expect(getControl('#street-number-0').value).toBe('1');
     });
 
-    it('should update the form from the model', () =>
-    {
+    it('should update the form from the model', () => {
         component.facade.patchValues({ name: 'new name' });
         fixture.detectChanges();
         expect(getControl('#name').value).toBe('new name');
 
         component.facade.patchValues({
-            otherNames: [
-                'name1',
-                'name3'
-            ]
+            otherNames: ['name1', 'name3'],
         });
         fixture.detectChanges();
         let elements = fixture.debugElement.queryAll(By.css('.name-input'));
@@ -694,11 +669,7 @@ describe('FormFacade in a component', () =>
         expect(getControl('#name-1').value).toBe('name3');
 
         component.facade.patchValues({
-            otherNames: [
-                'name1',
-                'name2',
-                'name3'
-            ]
+            otherNames: ['name1', 'name2', 'name3'],
         });
         fixture.detectChanges();
         elements = fixture.debugElement.queryAll(By.css('.name-input'));
@@ -708,9 +679,7 @@ describe('FormFacade in a component', () =>
         expect(getControl('#name-2').value).toBe('name3');
 
         component.facade.patchValues({
-            otherNames: [
-                'name1'
-            ]
+            otherNames: ['name1'],
         });
         fixture.detectChanges();
         elements = fixture.debugElement.queryAll(By.css('.name-input'));
@@ -718,8 +687,7 @@ describe('FormFacade in a component', () =>
         expect(getControl('#name-0').value).toBe('name1');
     });
 
-    function getControl(selector: string): HTMLInputElement
-    {
+    function getControl(selector: string): HTMLInputElement {
         return fixture.debugElement.query(By.css(selector)).nativeElement;
     }
 });

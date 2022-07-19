@@ -1,32 +1,23 @@
 <form [formGroup]="facade.group">
-  <div class="wrapper">
-    <div>Name:</div>
-    <input type="text"
-           formControlName="name"
-           name="name">
+    <div class="wrapper">
+        <div>Name:</div>
+        <input type="text" formControlName="name" name="name" />
 
-    <div>Age:</div>
-    <input type="number"
-           formControlName="age"
-           name="age"
-           min="0">
+        <div>Age:</div>
+        <input type="number" formControlName="age" name="age" min="0" />
 
-    <div>Has sex?</div>
-    <input type="checkbox"
-           name="selectSex"
-           formControlName="selectSex">
+        <div>Has sex?</div>
+        <input type="checkbox" name="selectSex" formControlName="selectSex" />
 
-    <ng-container *ngIf="facade.getValue('selectSex')">
-      <div>Sex:</div>
-      <select *ffSelect="facade; key: 'sex'; let manager"
-              formControlName="sex">
-        <option *ngFor="let option of manager.values"
-                [value]="option.id">
-          {{option.name}}
-        </option>
-      </select>
-    </ng-container>
-  </div>
+        <ng-container *ngIf="facade.getValue('selectSex')">
+            <div>Sex:</div>
+            <select *ffSelect="facade; key: 'sex'; let manager" formControlName="sex">
+                <option *ngFor="let option of manager.values" [value]="option.id">
+                    {{ option.name }}
+                </option>
+            </select>
+        </ng-container>
+    </div>
 </form>
 
 <pre>{{ facade.group.value | json }}</pre>

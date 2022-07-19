@@ -1,10 +1,8 @@
 import { forEachObject, mapToObject, mapValues } from './object-utils';
 
-describe('forEachObject', () =>
-{
-    it('should work with plain object', () =>
-    {
-        const obj = { n: 1, s: 'str', f: () => { } };
+describe('forEachObject', () => {
+    it('should work with plain object', () => {
+        const obj = { n: 1, s: 'str', f: () => {} };
 
         const res = invokeAndSort(obj);
 
@@ -14,29 +12,18 @@ describe('forEachObject', () =>
         expect(res[2]).toEqual(['s', obj.s]);
     });
 
-    it('should work with classes', () =>
-    {
-        class C
-        {
-            constructor(
-                public n: number,
-                public s: string
-            ) { }
-            m() { }
+    it('should work with classes', () => {
+        class C {
+            constructor(public n: number, public s: string) {}
+            m() {}
         }
 
-        class D extends C
-        {
-            constructor(
-                n: number,
-                s: string,
-                public x: string
-            )
-            {
+        class D extends C {
+            constructor(n: number, s: string, public x: string) {
                 super(n, s);
             }
 
-            ff() { }
+            ff() {}
         }
 
         const obj = new D(1, 'a', 'b');
@@ -49,36 +36,29 @@ describe('forEachObject', () =>
     });
 });
 
-describe('mapToObject', () =>
-{
-    it('should work', () =>
-    {
+describe('mapToObject', () => {
+    it('should work', () => {
         const src = ['a', 'b', 'c'];
         const dst = mapToObject(src, s => s.charCodeAt(0));
         expect(dst).toEqual({ a: 97, b: 98, c: 99 });
     });
 });
 
-describe('mapValues', () =>
-{
-    it('should work', () =>
-    {
-        const src = { 'x': 'a', 'y': 'b', 'z': 'c' };
+describe('mapValues', () => {
+    it('should work', () => {
+        const src = { x: 'a', y: 'b', z: 'c' };
         const dst = mapValues(src, s => s.charCodeAt(0));
         expect(dst).toEqual({ x: 97, y: 98, z: 99 });
     });
 });
 
 type EntryType<T> = {
-    [K in keyof T]: [K, T[K]]
+    [K in keyof T]: [K, T[K]];
 }[keyof T];
 
-
-function invokeAndSort<T extends object>(obj: T): EntryType<T>[]
-{
+function invokeAndSort<T extends object>(obj: T): EntryType<T>[] {
     const res = [];
-    forEachObject(obj, (v, k, o) =>
-    {
+    forEachObject(obj, (v, k, o) => {
         res.push([k, v]);
         expect(o).toBe(obj);
     });

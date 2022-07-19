@@ -6,15 +6,9 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { FormFacadeModule } from '@mdcc/form-facade';
 
 @NgModule({
-  declarations: [
-    AppComponent
-  ],
-  imports: [
-    BrowserModule,
-    ReactiveFormsModule,
-    FormFacadeModule
-  ],
-  providers: [],
-  bootstrap: [AppComponent]
+    declarations: [AppComponent],
+    imports: [BrowserModule, ReactiveFormsModule, FormFacadeModule],
+    providers: [],
+    bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}
