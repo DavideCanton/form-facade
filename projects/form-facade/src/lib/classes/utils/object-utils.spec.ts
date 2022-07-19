@@ -1,4 +1,4 @@
-import { forEachObject, mapToObject, mapValues } from './object-utils';
+import { forEachObject, mapToObject, mapValues, wrap } from './object-utils';
 
 describe('forEachObject', () => {
     it('should work with plain object', () => {
@@ -49,6 +49,46 @@ describe('mapValues', () => {
         const src = { x: 'a', y: 'b', z: 'c' };
         const dst = mapValues(src, s => s.charCodeAt(0));
         expect(dst).toEqual({ x: 97, y: 98, z: 99 });
+    });
+});
+
+describe('wrap', () => {
+    it('should wrap plain functions', () => {
+        const obj = { f: (n: number) => n + 1 };
+        wrap(obj, 'f', old => n => old(n) + 2);
+        expect(obj.f(3)).toEqual(6);
+    });
+
+    it('should not call old', () => {
+        const obj = { f: (n: number) => n + 1 };
+        wrap(obj, 'f', _old => n => n + 2);
+        expect(obj.f(3)).toEqual(5);
+    });
+
+    it('should keep this', () => {
+        const obj = {
+            n: 1,
+            f(x: number) {
+                return this.n + x;
+            },
+        };
+
+        wrap(obj, 'f', old => x => old(x * 2) * 2);
+        expect(obj.f(10)).toEqual(42);
+    });
+
+    it('should keep this with classes', () => {
+        class C {
+            constructor(private n: number) {}
+
+            f(x: number) {
+                return this.n + x;
+            }
+        }
+
+        const obj = new C(1);
+        wrap(obj, 'f', old => x => old(x * 2) * 2);
+        expect(obj.f(10)).toEqual(42);
     });
 });
 

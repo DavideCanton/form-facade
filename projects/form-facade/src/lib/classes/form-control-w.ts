@@ -7,6 +7,7 @@ import {
     FormGroup,
     ValidatorFn,
 } from '@angular/forms';
+import { wrap } from './utils/object-utils';
 
 export interface Warnings {
     [key: string]: any;
@@ -24,19 +25,15 @@ export interface ControlW {
 function applyWarningMixin(ctrl: ControlW & AbstractControl) {
     let _warnings: Warnings = {};
 
-    const oldUpdate = ctrl.updateValueAndValidity;
-    ctrl.updateValueAndValidity = function (
-        ...opts: Parameters<AbstractControl['updateValueAndValidity']>
-    ) {
+    wrap(ctrl, 'updateValueAndValidity', old => (...opts) => {
         _warnings = {};
-        oldUpdate.apply(ctrl, opts);
-    };
+        old.apply(ctrl, opts);
+    });
 
-    const oldDisable = ctrl.disable;
-    ctrl.disable = function (...opts: Parameters<AbstractControl['disable']>) {
+    wrap(ctrl, 'disable', old => (...opts) => {
         _warnings = {};
-        oldDisable.apply(ctrl, opts);
-    };
+        old.apply(ctrl, opts);
+    });
 
     ctrl.addWarning = function (warning: Warnings) {
         if (warning) {

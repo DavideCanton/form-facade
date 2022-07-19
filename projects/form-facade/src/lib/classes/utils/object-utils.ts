@@ -23,3 +23,14 @@ export function mapValues<T extends object, V>(
         mapper(obj[k], k)
     );
 }
+
+export function wrap<T, K extends keyof T>(
+    obj: T,
+    key: K,
+    wrapper: T[K] extends (...args: any) => any
+        ? (old: T[K]) => (...args: Parameters<T[K]>) => ReturnType<T[K]>
+        : never
+) {
+    const old = obj[key] as unknown as Function;
+    obj[key] = wrapper.call(obj, old.bind(obj)) as any;
+}

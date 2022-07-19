@@ -379,22 +379,20 @@ export class FormFacade<T> {
     private computeSelectModels(): void {
         this.selectModels = {};
 
-        const selectModelKeys = Object.keys(this.formDefinition).filter(
-            k => this.formDefinition[k].select
-        );
+        Object.keys(this.formDefinition)
+            .filter(k => this.formDefinition[k].select)
+            .forEach(k => {
+                const modelManager = (this.selectModels[k] = new SelectManager());
+                modelManager.values = this.formDefinition[k].select;
 
-        selectModelKeys.forEach(k => {
-            const modelManager = (this.selectModels[k] = new SelectManager());
-            modelManager.values = this.formDefinition[k].select;
+                this.group.get(k)!.valueChanges.subscribe(v => {
+                    modelManager.selectedId = v;
+                });
 
-            this.group.get(k)!.valueChanges.subscribe(v => {
-                modelManager.selectedId = v;
+                const initialValue = this.formDefinition[k as keyof T].initialValue;
+                if (initialValue != null)
+                    modelManager.selectedId = this.formDefinition[k].initialValue as any;
             });
-
-            const initialValue = this.formDefinition[k as keyof T].initialValue;
-            if (initialValue != null)
-                modelManager.selectedId = this.formDefinition[k].initialValue as any;
-        });
     }
 
     private createControl<K extends keyof T>(
@@ -407,7 +405,9 @@ export class FormFacade<T> {
                 def.validator,
                 def.asyncValidator
             );
-        } else return new FormControlW(def.initialValue, def.validator, def.asyncValidator);
+        } else {
+            return new FormControlW(def.initialValue, def.validator, def.asyncValidator);
+        }
     }
 
     private alignFormArrays(values: Partial<T>): void {
