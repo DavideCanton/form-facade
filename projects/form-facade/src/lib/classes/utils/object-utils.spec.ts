@@ -1,4 +1,4 @@
-import { forEachObject } from './object-utils';
+import { forEachObject, mapToObject, mapValues } from './object-utils';
 
 describe('forEachObject', () =>
 {
@@ -49,6 +49,25 @@ describe('forEachObject', () =>
     });
 });
 
+describe('mapToObject', () =>
+{
+    it('should work', () =>
+    {
+        const src = ['a', 'b', 'c'];
+        const dst = mapToObject(src, s => s.charCodeAt(0));
+        expect(dst).toEqual({ a: 97, b: 98, c: 99 });
+    });
+});
+
+describe('mapValues', () =>
+{
+    it('should work', () =>
+    {
+        const src = { 'x': 'a', 'y': 'b', 'z': 'c' };
+        const dst = mapValues(src, s => s.charCodeAt(0));
+        expect(dst).toEqual({ x: 97, y: 98, z: 99 });
+    });
+});
 
 type EntryType<T> = {
     [K in keyof T]: [K, T[K]]

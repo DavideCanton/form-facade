@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { Validators } from '@angular/forms';
 import { composeValidators, FormFacade, makeDependentValidator } from '@mdcc/form-facade';
 import { filter } from 'rxjs/operators';
 
