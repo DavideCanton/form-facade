@@ -2,7 +2,7 @@ import { AbstractControl, FormArray, FormGroup } from '@angular/forms';
 import { combineLatest, isObservable, Observable, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, startWith } from 'rxjs/operators';
 
-import { forEachObject, mapValues } from '../classes/utils/object-utils';
+import { forEachObject, mapToObject, mapValues } from '../classes/utils/object-utils';
 import * as I from './definitions/form-group-facade.interfaces';
 import { Select, SelectManager } from './definitions/select-model';
 import { ControlW, FormArrayW, FormControlW, FormGroupW } from './form-control-w';
@@ -142,12 +142,10 @@ export class FormFacade<T> {
     patchValues(values: Partial<T>, options?: { onlySelf?: boolean; emitEvent?: boolean }) {
         this.alignFormArrays(values);
         this.group.patchValue(values, options);
-        if (options && !options.emitEvent) {
-            forEachObject(values, (v, k) => {
-                const manager = this.getSelectModel(k);
-                if (manager) manager.selectedId = v as any;
-            });
-        }
+        forEachObject(values, (v, k) => {
+            const manager = this.getSelectModel(k);
+            if (manager) manager.selectedId = v as any;
+        });
     }
 
     resetInitialValue() {
@@ -155,13 +153,7 @@ export class FormFacade<T> {
     }
 
     getInitialValues(): T {
-        return Object.keys(this.formDefinition).reduce(
-            (acc, k) => ({
-                ...acc,
-                [k]: this.formDefinition[k].initialValue,
-            }),
-            {}
-        ) as T;
+        return mapValues(this.formDefinition, v => v.initialValue) as T;
     }
 
     revalidate() {
@@ -184,16 +176,7 @@ export class FormFacade<T> {
     }
 
     getSelectModel(key: keyof T): SelectManager | null {
-        const m = this.selectModels[key] as SelectManager | undefined;
-        return m || null;
-    }
-
-    getSelectValues(key: keyof T): Select[] | null {
-        return this.getSelectModel(key)?.values ?? null;
-    }
-
-    getSelectValue(key: keyof T): Select | null {
-        return this.getSelectModel(key)?.selectedValue;
+        return this.selectModels[key] ?? null;
     }
 
     markAsDependent(key1: keyof T, key2: keyof T, markAsDirty = true) {
@@ -350,13 +333,13 @@ export class FormFacade<T> {
         const completeExtras = {} as I.FormDefinitionExtras;
 
         if (extra && extra.validator)
-            completeExtras.validator = _c => (this.group ? extra.validator(this.group) : null);
+            completeExtras.validator = () => (this.group ? extra.validator(this.group) : null);
 
         if (extra && extra.disabledWhen$) completeExtras.disabledWhen$ = extra.disabledWhen$;
         else completeExtras.validator = null;
 
         if (extra && extra.asyncValidator)
-            completeExtras.asyncValidator = _c =>
+            completeExtras.asyncValidator = () =>
                 this.group ? extra.asyncValidator(this.group) : of(null);
         else completeExtras.asyncValidator = null;
 
